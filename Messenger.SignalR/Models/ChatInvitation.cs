@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace Messenger.SignalR.Models
+namespace Messenger.API.Models
 {
     public class ChatInvitation
     {

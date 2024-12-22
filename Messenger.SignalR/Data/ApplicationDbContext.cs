@@ -1,7 +1,7 @@
-﻿using Messenger.SignalR.Models;
+﻿using Messenger.API.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Messenger.SignalR.Data
+namespace Messenger.API.Data
 {
     public class ApplicationDbContext : DbContext
     {
