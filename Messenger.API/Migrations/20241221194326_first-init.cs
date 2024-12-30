@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Messenger.SignalR.Migrations
+namespace Messenger.API.Migrations
 {
     /// <inheritdoc />
     public partial class firstinit : Migration

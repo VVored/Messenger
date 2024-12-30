@@ -28,7 +28,7 @@ namespace Messenger.API.Controllers
             {
                 return Unauthorized("Invalid username or password");
             }
-            if (_passwordHasher.VerifyPassword(loginRequst.Password, user.PasswordHash))
+            if (!_passwordHasher.VerifyPassword(loginRequst.Password, user.PasswordHash))
             {
                 return Unauthorized("Invalid username or password");
             }

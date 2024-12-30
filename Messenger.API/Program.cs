@@ -9,6 +9,7 @@ using System.Security.Claims;
 using Messenger.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -24,14 +25,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true
         };
     });
-builder.Services.AddControllers();
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
 builder.Services.AddTransient<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSignalR();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationDbContext")));
+
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.UseRouting();
+app.UseAuthorization();
 
 app.MapGet("/", () => "Hello World!");
 app.MapHub<ChatHub>("/chat");
+app.MapControllers();
 
 app.Run();

@@ -18,7 +18,7 @@ namespace Messenger.API.Controllers
             _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<IActionResult> Reqister([FromBody] RegisterRequest registerRequest)
         {
             if (_context.Users.Any(u => u.Username == registerRequest.Username))
@@ -30,9 +30,13 @@ namespace Messenger.API.Controllers
             {
                 Username = registerRequest.Username,
                 Email = registerRequest.Email,
-                PasswordHash = hashedPassword
+                PasswordHash = hashedPassword,
+                FirstName = registerRequest.FirstName,
+                LastName = registerRequest.LastName,
+                AvatarUrl = string.Empty
             };
             await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
             return Ok(user);
         }
         public class RegisterRequest
@@ -40,6 +44,8 @@ namespace Messenger.API.Controllers
             public string Username { get; set; }
             public string Email { get; set; }
             public string Password { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
         }
     }
 }
