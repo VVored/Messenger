@@ -24,6 +24,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(builder.Configuration["Authentication:SecretForKey"])),
             ValidateIssuerSigningKey = true
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accesToken = context.Request.Query["acces_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accesToken) && path.StartsWithSegments("/chat"))
+                {
+                    context.Token = accesToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
 builder.Services.AddTransient<IPasswordHasher, PasswordHasher>();
