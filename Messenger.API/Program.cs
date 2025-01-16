@@ -11,6 +11,7 @@ using Messenger.API.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
+builder.Services.AddCors();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -45,6 +46,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql
 
 var app = builder.Build();
 
+app.UseCors(options =>
+{
+    options.AllowAnyHeader();
+    options.AllowAnyMethod();
+    options.AllowAnyOrigin();
+}); 
 app.UseHttpsRedirection();
 
 app.UseRouting();
