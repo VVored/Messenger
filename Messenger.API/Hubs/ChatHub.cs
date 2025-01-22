@@ -11,8 +11,6 @@ namespace Messenger.API.Hubs
     [Authorize]
     public class ChatHub : Hub
     {
-        private readonly static Dictionary<string, string> _connections = new Dictionary<string, string>();
-
         private readonly ApplicationDbContext _context;
 
         public ChatHub(ApplicationDbContext context)
