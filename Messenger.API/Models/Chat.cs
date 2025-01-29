@@ -13,5 +13,7 @@ namespace Messenger.API.Models
         public string ChatType { get; set; } // 'private' или 'group'
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public ICollection<ChatMember> Members { get; set; } = new List<ChatMember>();
+        public GroupChatInfo GroupChatInfo { get; set; }
     }
 }

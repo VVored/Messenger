@@ -1,27 +1,38 @@
-import React, { useEffect } from 'react'
+import React from 'react'
+import Chat from './Chat';
 
-const getUserChat = async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        const response = await fetch('https://localhost:7192/api/chats/my', {
-            method: 'GET',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-        });
-        console.log(response);
-    }
-}
-
-useEffect(() => {
-    getUserChat();
-}, []);
-
-const ChatList = (id) => {
+const ChatList = ({ chats }) => {
     return (
-        <div>
-            
+        <div style={{ width: "30vw" }}>
+            {
+                chats.map(chat =>
+                    <Chat key={chat.chatId} chat={chat}></Chat>
+                )
+            }
+            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
+            <div>
+                <p>{chat.groupName}</p>
+            </div>
+            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
+            <div>
+                <p>{chat.groupName}</p>
+            </div>
+            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
+            <div>
+                <p>{chat.groupName}</p>
+            </div>
+            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
+            <div>
+                <p>{chat.groupName}</p>
+            </div>
+            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
+            <div>
+                <p>{chat.groupName}</p>
+            </div>
+            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
+            <div>
+                <p>{chat.groupName}</p>
+            </div>
         </div>
     )
 }

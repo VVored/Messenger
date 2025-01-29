@@ -1,0 +1,21 @@
+.chat_container {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.chat_avatar {
+    height: 50px;
+    margin: 0 10px;
+    border-radius: 50%;
+}
+
+.chat_container:hover {
+    background-color:rgba(178, 178, 178, 0.5);  
+}
+
+.chat_container:active {
+    background-color: rgba(178, 178, 178, 1);
+}

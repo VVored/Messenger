@@ -28,7 +28,7 @@ namespace Messenger.API.Controllers
             var chats = await _context.GroupChatInfos
                 .Where(info => info.GroupName.ToLower().Contains(searchQuery.ToLower()) || info.Description.ToLower().Contains(searchQuery.ToLower()))
                 .Include(info => info.Chat)
-                .Select(info => new ChatDto { ChatId = info.Chat.ChatId, ChatType = info.Chat.ChatType, CreatedAt = info.Chat.CreatedAt})
+                .Select(info => new ChatDto { ChatId = info.Chat.ChatId, ChatType = info.Chat.ChatType, CreatedAt = info.Chat.CreatedAt, GroupName = info.GroupName, AvatarUrl = info.AvatarUrl, Description = info.Description})
                 .ToListAsync();
             return Ok(chats);
         }
@@ -40,8 +40,8 @@ namespace Messenger.API.Controllers
             {
                 return Unauthorized("User ID not found in token");
             }
-            var query = _context.ChatMembers.Where(cm => cm.UserId == int.Parse(userId)).Include(cm => cm.Chat);
-            var chats = await query.Select(cm => new ChatDto { ChatId = cm.ChatId, ChatType = cm.Chat.ChatType, CreatedAt = cm.Chat.CreatedAt }).ToListAsync();
+            var query = _context.ChatMembers.Where(cm => cm.UserId == int.Parse(userId)).Include(cm => cm.Chat).Include(cm => cm.Chat.GroupChatInfo);
+            var chats = await query.Select(cm => new ChatDto { ChatId = cm.ChatId, ChatType = cm.Chat.ChatType, CreatedAt = cm.Chat.CreatedAt, AvatarUrl = cm.Chat.GroupChatInfo.AvatarUrl, Description = cm.Chat.GroupChatInfo.Description, GroupName = cm.Chat.GroupChatInfo.GroupName }).ToListAsync();
             return Ok(chats);
         }
         [HttpGet("{chatId}", Name = "GetChat")]
@@ -57,6 +57,9 @@ namespace Messenger.API.Controllers
                 ChatId = chat.ChatId,
                 ChatType = chat.ChatType,
                 CreatedAt = chat.CreatedAt,
+                AvatarUrl = chat.GroupChatInfo.AvatarUrl, 
+                GroupName = chat.GroupChatInfo.GroupName,
+                Description = chat.GroupChatInfo.Description,
             };
             return Ok(chatDto);
         }
@@ -81,7 +84,10 @@ namespace Messenger.API.Controllers
             {
                 ChatId = createdChat.ChatId,
                 ChatType = createdChat.ChatType,
-                CreatedAt = createdChat.CreatedAt
+                CreatedAt = createdChat.CreatedAt,
+                AvatarUrl = chatInfo.AvatarUrl,
+                GroupName = chatInfo.GroupName,
+                Description = chatInfo.Description,
             };
             return CreatedAtRoute(routeName: "GetChat", routeValues: new { response.ChatId }, value: response);
         }
