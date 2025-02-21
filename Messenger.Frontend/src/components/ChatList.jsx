@@ -1,38 +1,14 @@
 import React from 'react'
 import Chat from './Chat';
 
-const ChatList = ({ chats }) => {
+const ChatList = ({ chats, selectedChat, setSelectedChat }) => {
     return (
-        <div style={{ width: "30vw" }}>
+        <div style={{ width: "30vw", overflowY: "auto" }}>
             {
                 chats.map(chat =>
-                    <Chat key={chat.chatId} chat={chat}></Chat>
+                    <Chat key={chat.chatId} chat={chat} onClick={() => setSelectedChat(chat)}></Chat>
                 )
             }
-            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
-            <div>
-                <p>{chat.groupName}</p>
-            </div>
-            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
-            <div>
-                <p>{chat.groupName}</p>
-            </div>
-            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
-            <div>
-                <p>{chat.groupName}</p>
-            </div>
-            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
-            <div>
-                <p>{chat.groupName}</p>
-            </div>
-            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
-            <div>
-                <p>{chat.groupName}</p>
-            </div>
-            <img className={style.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)}></img>
-            <div>
-                <p>{chat.groupName}</p>
-            </div>
         </div>
     )
 }

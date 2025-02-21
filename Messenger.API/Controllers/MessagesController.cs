@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Security.Claims;
 
 namespace Messenger.API.Controllers
@@ -74,7 +75,7 @@ namespace Messenger.API.Controllers
         [HttpGet("{messageId}", Name = "GetMessage")]
         public async Task<ActionResult<MessageDto>> GetMessage(int messageId)
         {
-            var message = await _context.Messages.Where(m => m.MessageId == messageId).Include(m => m.Sender).Include(m => m.Chat).FirstOrDefaultAsync();
+            var message = await _context.Messages.Where(m => m.MessageId == messageId).Include(m => m.Sender).Include(m => m.Chat).Include(m => m.Chat.GroupChatInfo).FirstOrDefaultAsync();
 
             if (message == null)
             {
@@ -89,7 +90,10 @@ namespace Messenger.API.Controllers
                 {
                     ChatId = message.ChatId,
                     ChatType = message.Chat.ChatType,
-                    CreatedAt = message.Chat.CreatedAt
+                    CreatedAt = message.Chat.CreatedAt,
+                    GroupName = message.Chat.GroupChatInfo.GroupName,
+                    Description = message.Chat.GroupChatInfo.Description,
+                    AvatarUrl = message.Chat.GroupChatInfo.AvatarUrl,
                 },
                 SenderId = message.SenderId,
                 Sender = new UserDto
@@ -116,7 +120,7 @@ namespace Messenger.API.Controllers
         public async Task<ActionResult<MessageDto>> CreateMessage([FromBody] MessageForCreationDto messageForCreationDto)
         {
             var user = await _context.Users.Where(u => u.UserId == int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefaultAsync();
-            var chat = await _context.Chats.Where(c => c.ChatId == messageForCreationDto.ChatId).FirstOrDefaultAsync();
+            var chat = await _context.Chats.Where(c => c.ChatId == messageForCreationDto.ChatId).Include(c => c.GroupChatInfo).FirstOrDefaultAsync();
 
             if (chat == null)
             {
@@ -133,28 +137,33 @@ namespace Messenger.API.Controllers
             await _context.Messages.AddAsync(message);
             await _context.SaveChangesAsync();
 
+            
+
             var response = new MessageDto
             {
                 MessageId = message.MessageId,
                 ChatId = message.ChatId,
                 ChatDto = new ChatDto
                 {
-                    ChatId = message.ChatId,
-                    ChatType = message.Chat.ChatType,
-                    CreatedAt = message.Chat.CreatedAt
+                    ChatId = chat.ChatId,
+                    ChatType = chat.ChatType,
+                    CreatedAt = chat.CreatedAt,
+                    GroupName = chat.GroupChatInfo.GroupName,
+                    Description = chat.GroupChatInfo.Description,
+                    AvatarUrl = chat.GroupChatInfo.AvatarUrl,
                 },
                 SenderId = message.SenderId,
                 Sender = new UserDto
                 {
                     UserId = message.SenderId,
-                    Username = message.Sender.Username,
-                    CreatedAt = message.Sender.CreatedAt,
-                    AvatarUrl = message.Sender.AvatarUrl,
-                    Email = message.Sender.Email,
-                    FirstName = message.Sender.FirstName,
-                    LastName = message.Sender.LastName,
-                    LastSeen = message.Sender.LastSeen,
-                    PasswordHash = message.Sender.PasswordHash
+                    Username = user.Username,
+                    CreatedAt = user.CreatedAt,
+                    AvatarUrl = user.AvatarUrl,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    LastSeen = user.LastSeen,
+                    PasswordHash = user.PasswordHash
                 },
                 Content = message.Content,
                 SentAt = message.SentAt,

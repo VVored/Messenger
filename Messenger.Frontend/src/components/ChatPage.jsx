@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import ChatList from './ChatList';
+import ChatMessages from './ChatMessages';
 
 const getUserChats = async () => {
     const token = localStorage.getItem('token');
@@ -13,16 +14,20 @@ const getUserChats = async () => {
 
 const ChatPage = () => {
     const [chats, setChats] = useState([]);
+    const [selectedChat, setSelectedChat] = useState(null);
+
     useEffect(() => {
         getUserChats().then((result) => {
             setChats(result.data);
         });
     }, []) 
     return (
-        <div style={{display: "flex", height: "100vh"}}>
-            <ChatList chats={chats}/>
+        <div style={{display: "flex", minHeight: "100vh"}}>
+            <ChatList chats={chats} selectedChat={selectedChat} setSelectedChat={setSelectedChat}/>
             <div style={{width: "70vw", backgroundColor: "rgba(178, 178, 178, 0.5)"}}>
-                
+                {
+                    selectedChat ? <ChatMessages chat={selectedChat}></ChatMessages> : <h1 style={{textAlign: "center"}}>Select a chat</h1>
+                }
             </div>
         </div>
     )

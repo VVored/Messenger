@@ -20,7 +20,7 @@ namespace Messenger.API.Hubs
 
         public async Task JoinChat(string chatId)
         {
-            var user = await _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefaultAsync();
+/*            var user = await _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefaultAsync();
             var chat = await _context.Chats.Where(c => c.ChatId == int.Parse(chatId)).FirstOrDefaultAsync();
 
             if (user != null && chat != null)
@@ -45,16 +45,16 @@ namespace Messenger.API.Hubs
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     LastSeen = user.LastSeen
-                };
+                };*/
 
                 await Groups.AddToGroupAsync(Context.ConnectionId, chatId);
-
+/*
                 await Clients.OthersInGroup(chatId).SendAsync("newMember", userResponse);
-            }
+            }*/
         }
         public async Task LeaveChat(string chatId)
         {
-            var chatMember = await _context.ChatMembers.Where(cm => cm.ChatId == int.Parse(chatId) && cm.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).Include(cm => cm.User).FirstOrDefaultAsync();
+/*            var chatMember = await _context.ChatMembers.Where(cm => cm.ChatId == int.Parse(chatId) && cm.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).Include(cm => cm.User).FirstOrDefaultAsync();
 
             if (chatMember != null)
             {
@@ -73,11 +73,11 @@ namespace Messenger.API.Hubs
 
                 _context.ChatMembers.Remove(chatMember);
                 await _context.SaveChangesAsync();
-
+*/
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId);
                 
-                await Clients.OthersInGroup(chatId).SendAsync("memberLeave", userResponse);
-            }
+/*                await Clients.OthersInGroup(chatId).SendAsync("memberLeave", userResponse);
+            }*/
         }
     }
 }

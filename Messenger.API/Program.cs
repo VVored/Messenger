@@ -29,7 +29,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
-                var accesToken = context.Request.Query["acces_token"];
+                var accesToken = context.Request.Query["access_token"];
                 var path = context.HttpContext.Request.Path;
                 if (!string.IsNullOrEmpty(accesToken) && path.StartsWithSegments("/chat"))
                 {
@@ -48,9 +48,10 @@ var app = builder.Build();
 
 app.UseCors(options =>
 {
+    options.WithOrigins("http://localhost:3000", "http://localhost:8000");
+    options.AllowCredentials();
     options.AllowAnyHeader();
     options.AllowAnyMethod();
-    options.AllowAnyOrigin();
 }); 
 app.UseHttpsRedirection();
 
