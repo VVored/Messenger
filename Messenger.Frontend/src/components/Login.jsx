@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import style from './Login.module.css'
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -34,8 +34,9 @@ const Login = () => {
         <div className={style.container}>
             <input className={style.input} type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
             <input className={style.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-            <button className={style.input} onClick={handleLogin}>Login</button>
-            {error ?? <p className={style.error}>{error}</p>}            
+            <button className={style.button} onClick={handleLogin}>Login</button>
+            {error ?? <p className={style.error}>{error}</p>}
+            <Link to="/register" className={style.register_link}>Register new account</Link>            
         </div>
     );
 };

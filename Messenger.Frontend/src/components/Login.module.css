@@ -17,8 +17,8 @@
 
 .button {
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
+    background-color: #ccc;
+    color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -27,4 +27,9 @@
 .error {
     color: red;
     margin-bottom: 10px;
+}
+
+.register_link {
+    text-decoration: none;
+    color: black;
 }

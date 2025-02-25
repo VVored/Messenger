@@ -1,0 +1,18 @@
+.message {
+    background-color: white;
+    padding: 5px;
+    border-radius: 10px;
+    width: fit-content;
+    max-width: 30%;
+    text-align: justify;
+    margin: 10px 10px 0px 10px;
+}
+
+.username {
+    margin: 0;
+    font-size: 12px;
+}
+
+.sentAt {
+    font-size: 10px;
+}

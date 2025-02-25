@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Messenger.API.Controllers
 {
     [Route("api/users")]
-    [ApiController]
+    [ApiController] 
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
