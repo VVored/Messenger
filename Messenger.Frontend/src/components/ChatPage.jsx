@@ -26,7 +26,7 @@ const ChatPage = () => {
             <ChatList chats={chats} setSelectedChat={setSelectedChat}/>
             <div style={{width: "70vw", backgroundColor: "rgba(178, 178, 178, 0.5)"}}>
                 {
-                    selectedChat ? <ChatMessages chat={selectedChat}></ChatMessages> : <h1 style={{textAlign: "center"}}>Select a chat</h1>
+                    selectedChat ? <ChatMessages chats={chats} setChats={setChats} chat={selectedChat}></ChatMessages> : <h1 style={{textAlign: "center"}}>Select a chat</h1>
                 }
             </div>
         </div>

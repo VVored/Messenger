@@ -18,9 +18,11 @@ namespace Messenger.API.Controllers
     public class ChatsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<ChatHub> _hubContext;
         public ChatsController(ApplicationDbContext context, IHubContext<ChatHub> hubContext)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _hubContext= hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ChatDto>>> GetChats(string searchQuery)

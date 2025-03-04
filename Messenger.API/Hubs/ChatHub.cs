@@ -18,7 +18,7 @@ namespace Messenger.API.Hubs
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task JoinChat(string chatId)
+        public async Task JoinGroup(string chatId)
         {
 /*            var user = await _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefaultAsync();
             var chat = await _context.Chats.Where(c => c.ChatId == int.Parse(chatId)).FirstOrDefaultAsync();
@@ -52,7 +52,7 @@ namespace Messenger.API.Hubs
                 await Clients.OthersInGroup(chatId).SendAsync("newMember", userResponse);
             }*/
         }
-        public async Task LeaveChat(string chatId)
+        public async Task LeaveGroup(string chatId)
         {
 /*            var chatMember = await _context.ChatMembers.Where(cm => cm.ChatId == int.Parse(chatId) && cm.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).Include(cm => cm.User).FirstOrDefaultAsync();
 
@@ -78,6 +78,69 @@ namespace Messenger.API.Hubs
                 
 /*                await Clients.OthersInGroup(chatId).SendAsync("memberLeave", userResponse);
             }*/
+        }
+        public async Task JoinChat(string chatId)
+        {
+            var chat = await _context.Chats.Where(c => c.ChatId == int.Parse(chatId)).FirstOrDefaultAsync();
+            var user = await _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefaultAsync();
+
+            if (chat != null && user != null)
+            {
+                var chatMember = new ChatMember
+                {
+                    Chat = chat,
+                    ChatId = int.Parse(chatId),
+                    JoinedAt = DateTime.UtcNow,
+                    Role = "Member",
+                    User = user,
+                    UserId = user.UserId
+                };
+
+                await _context.ChatMembers.AddAsync(chatMember);
+                await _context.SaveChangesAsync();
+
+                var response = new UserDto
+                {
+                    AvatarUrl = user.AvatarUrl,
+                    LastSeen = user.LastSeen,
+                    CreatedAt = user.CreatedAt,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    PasswordHash = user.PasswordHash,
+                    UserId = user.UserId,
+                    Username = user.Username
+                };
+
+                await Clients.Client(Context.ConnectionId).SendAsync("userJoinChat", response);
+            }
+        }
+        public async Task LeaveChat(string chatId)
+        {
+            var chat = await _context.Chats.Include(c => c.Members).FirstOrDefaultAsync(c => c.ChatId == int.Parse(chatId));
+            var member = await _context.ChatMembers.Include(cm => cm.User).FirstOrDefaultAsync(cm => cm.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value));
+
+
+            if (chat != null && member != null)
+            {
+                var response = new UserDto
+                {
+                    AvatarUrl = member.User.AvatarUrl,
+                    CreatedAt = member.User.CreatedAt,
+                    Email = member.User.Email,
+                    FirstName = member.User.FirstName,
+                    LastName = member.User.LastName,
+                    LastSeen = member.User.LastSeen,
+                    PasswordHash = member.User.PasswordHash,
+                    UserId = member.UserId,
+                    Username = member.User.Username
+                };
+
+                _context.ChatMembers.Remove(member);
+                await _context.SaveChangesAsync();
+
+                await Clients.Client(Context.ConnectionId).SendAsync("leaveChatMember", response);
+            }
         }
     }
 }

@@ -20,6 +20,7 @@ const ChatList = ({ chats, setSelectedChat }) => {
 
     return (
         <div style={{ width: "30vw", overflowY: "auto", minHeight: "100vh" }}>
+            <button className={styles.button}>Create new chat</button>
             <input className={styles.input} type="text" onChange={(e) => {setSearchQuery(e.target.value); globalSearchChats();}} value={searchQuery} placeholder="Global search"/>
             {
                 searchQuery ? <div style={{backgroundColor: '#ccc', width: '100%', height: '4%', textAlign: 'center'}}>Global search result</div> : <div></div>

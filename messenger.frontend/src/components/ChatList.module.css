@@ -11,3 +11,18 @@
     text-align: justify;
     padding-left: 10px;
 }
+
+.button {
+    border: 1px solid #cccccc;
+    background: rgb(178, 178, 178) !important;
+    outline: none;
+    border-radius: 15px;
+    height: 5%;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    display: block;
+    margin: 10px auto;
+    text-align: justify;
+    padding-left: 10px;
+}

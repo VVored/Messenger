@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Mozilla;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 
 namespace Messenger.API.Controllers
@@ -54,6 +55,27 @@ namespace Messenger.API.Controllers
                     LastSeen = chatMember.User.LastSeen,
                     PasswordHash = chatMember.User.PasswordHash,
                 });
+            }
+
+            return Ok(response);
+        }
+        [HttpGet("isjoined")]
+        public async Task<ActionResult<bool>> IsUserJoined(int chatId)
+        {
+            var chat = await _context.Chats.Where(c => c.ChatId == chatId).FirstOrDefaultAsync();
+
+            if (chat == null)
+            {
+                return NotFound();
+            }
+
+            var member = await _context.ChatMembers.Where(cm => cm.UserId == int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefaultAsync();
+
+            var response = false;
+
+            if (member != null)
+            {
+                response = true;
             }
 
             return Ok(response);

@@ -3,16 +3,29 @@ import axios from 'axios';
 import Message from './Message';
 import { HubConnectionBuilder } from "@microsoft/signalr"
 import styles from './ChatMessages.module.css';
+import styleChat from './Chat.module.css';
+import leaveChatImg from '../imgs/leave_chat.png';
 
-const ChatMessages = ({ chat }) => {
+const ChatMessages = ({ chat, chats, setChats }) => {
 
     const [messages, setMessages] = useState([]);
     const messagesEndRef = useRef(null);
     const [currentMessage, setCurrentMessage] = useState('');
     const [connection, setConnection] = useState(null);
+    const [isJoined, setIsJoined] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current.scrollIntoView({behaivor: 'smooth'});
+    }
+
+    const IsUserJoined = async () => {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`https://localhost:7192/api/chats/${chat.chatId}/members/isjoined`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        setIsJoined(response.data);
     }
 
     const getChatMessages = async (chatId) => {
@@ -31,14 +44,27 @@ const ChatMessages = ({ chat }) => {
         .build();
         
         connection.start().then(res => {
-            connection.invoke("JoinChat", chatId + '')
+            connection.invoke("JoinGroup", chatId + '')
                 .catch(err => {
                     console.log(err);
                 });
         }).catch(err => {
             console.log(err);
         });
-        connection.on('newMessage', message => { console.log(message); setMessages(prev => [...prev, message])});
+        connection.on('newMessage', message => { 
+            console.log(message);
+            setMessages(prev => [...prev, message]);
+        });
+        connection.on('userJoinChat', response => {
+            setChats(prev => [...prev, chat]);
+            setIsJoined(true);
+            console.log(response);
+        });
+        connection.on('leaveChatMember', response => {
+            setChats(prev => prev.filter(item => item !== chat));
+            setIsJoined(false);
+            console.log(response);
+        })
         connection.onclose(() => StartConnection());
         setConnection(connection);
     }
@@ -55,12 +81,20 @@ const ChatMessages = ({ chat }) => {
                         'Content-Type': 'application/json'
                     }
                 });
-                setCurrentMessage('');
             }
         }
     }
 
+    const JoinChat = async () => {
+        connection.invoke('JoinChat', chat.chatId + '');
+    }
+
+    const LeaveChat = async () => {
+        connection.invoke('LeaveChat', chat.chatId + '');
+    }
+
     useEffect(() => {
+        setIsJoined(IsUserJoined());
         getChatMessages(chat.chatId).then(response => { setMessages(response.data) });
         StartConnection(chat.chatId).catch(error => {
             if (connection.state === 'Disconnected') {
@@ -71,19 +105,28 @@ const ChatMessages = ({ chat }) => {
 
     useEffect(scrollToBottom, [messages])
 
-
     return (
         <div style={{minHeight: '100vh'}}>
-            <div style={{height: '95vh', overflowY: 'auto'}}>
+            <div style={{display: 'flex', height: '10vh', background: 'white'}}>
+                <div style={{display: 'flex', cursor: 'pointer', width: '85%', margin: 'auto 0'}}  onClick={() => {console.log('1')}}>
+                    <img className={styleChat.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)} alt="" />
+                    <p>{chat.groupName}</p>
+                </div>
+                <div style={{display: 'flex', width: '15%'}}>
+                    {isJoined ? <button className={styles.button} style={{border: 'none'}} onClick={() => LeaveChat()}><img style={{maxHeight: '50px'}} src={leaveChatImg} alt='' /></button> : <div></div>}
+                </div>
+            </div>
+            <div style={{height: '85vh', overflowY: 'auto'}}>
                 {
                     messages.map(message => {
                         return <Message key={message.messageId} message={message} />
                     })
                 }
-                <div ref={messagesEndRef}/>   
+                <div ref={messagesEndRef}/>
             </div>
             <div style={{height: '5vh', background: 'white', margin: 'auto' , borderColor: 'rgba(178, 178, 178, 0.5)', borderWidth: '1px'}}>
-                <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => sendMessage(e, chat.chatId, currentMessage)} placeholder="Text your message" />
+                {isJoined ? <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => sendMessage(e, chat.chatId, currentMessage)} placeholder="Text your message" />
+                 : <button className={styles.button} onClick={() => {JoinChat()}}>Join chat</button>}
             </div>
         </div>
     )
