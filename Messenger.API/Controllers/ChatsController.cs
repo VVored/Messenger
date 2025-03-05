@@ -30,6 +30,7 @@ namespace Messenger.API.Controllers
             var chats = await _context.GroupChatInfos
                 .Where(info => info.GroupName.ToLower().Contains(searchQuery.ToLower()) || info.Description.ToLower().Contains(searchQuery.ToLower()))
                 .Include(info => info.Chat)
+                .OrderBy(info => info.ChatId)
                 .Select(info => new ChatDto { ChatId = info.Chat.ChatId, ChatType = info.Chat.ChatType, CreatedAt = info.Chat.CreatedAt, GroupName = info.GroupName, AvatarUrl = info.AvatarUrl, Description = info.Description})
                 .ToListAsync();
             return Ok(chats);
@@ -91,6 +92,7 @@ namespace Messenger.API.Controllers
                 GroupName = chatInfo.GroupName,
                 Description = chatInfo.Description,
             };
+
             return CreatedAtRoute(routeName: "GetChat", routeValues: new { response.ChatId }, value: response);
         }
         [HttpPut("{chatId}")]

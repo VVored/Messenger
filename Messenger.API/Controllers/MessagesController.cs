@@ -39,6 +39,7 @@ namespace Messenger.API.Controllers
                 .Where(m => m.ChatId == chatId)
                 .Include(m => m.Chat)
                 .Include(m => m.Sender)
+                .OrderBy(m => m.SentAt)
                 .Select(m => new MessageDto
                 {
                     MessageId = m.MessageId,
