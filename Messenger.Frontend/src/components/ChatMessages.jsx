@@ -6,11 +6,12 @@ import styles from './ChatMessages.module.css';
 import styleChat from './Chat.module.css';
 import leaveChatImg from '../imgs/leave_chat.png';
 
-const ChatMessages = ({ chat, setChats}) => {
+const ChatMessages = ({ chat, setChats }) => {
 
     const [messages, setMessages] = useState([]);
     const messagesEndRef = useRef(null);
     const [currentMessage, setCurrentMessage] = useState('');
+    const [attachments, setAttachments] = useState([]);
     const [connection, setConnection] = useState(null);
     const [isJoined, setIsJoined] = useState(false);
 
@@ -57,10 +58,12 @@ const ChatMessages = ({ chat, setChats}) => {
             }
         });
         connection.on('userJoinChat', response => {
+            console.log('userJoinedChat');
             setChats(prev => [...prev, chat]);
             setIsJoined(true);
         });
         connection.on('leaveChatMember', response => {
+            console.log('leaveChatMember');
             setChats(prev => prev.filter(item => item !== chat));
             setIsJoined(false);
         })
@@ -78,13 +81,29 @@ const ChatMessages = ({ chat, setChats}) => {
                 const token = localStorage.getItem('token');
                 await fetch('https://localhost:7192/api/messages', {
                     method: 'POST',
-                    body: JSON.stringify({ chatId, content }),
+                    body: JSON.stringify({ chatId, content, attachments }),
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
             }
+        }
+        setCurrentMessage('');
+        setAttachments([]);
+    }
+
+    const uploadFiles = async (files) => {
+        for (let i = 0; i < files.length; i++) {
+            const formData = new FormData();
+            formData.append('file', files[i]);
+            const response = await axios.post('https://localhost:7192/api/files', formData);
+            const attachment = {
+                fileUrl: response.data,
+                fileType: files[i].type,
+                fileSize: files[i].size
+            }
+            setAttachments(prev => [...prev, attachment]);
         }
     }
 
@@ -104,13 +123,13 @@ const ChatMessages = ({ chat, setChats}) => {
         StartConnection(chat.chatId);
     }, [chat]);
 
-    useEffect(scrollToBottom, [messages])
+    useEffect(scrollToBottom, [messages]);
 
     return (
         <div style={{ minHeight: '100vh' }}>
             <div style={{ display: 'flex', height: '10vh', background: 'white' }}>
-                <div style={{ display: 'flex', cursor: 'pointer', width: '85%', margin: 'auto 0' }} onClick={() => { console.log('1') }}>
-                    <img className={styleChat.chat_avatar} src={require(`../imgs/${chat.avatarUrl}`)} alt="" />
+                <div style={{ display: 'flex', cursor: 'pointer', width: '85%', margin: 'auto 0' }} onClick={() => { console.log('1'); }}>
+                    <img className={styleChat.chat_avatar} src={require(`D:/petProjects/Messenger/Messenger.API/Uploads/${chat.avatarUrl}`)} alt="" />
                     <p>{chat.groupName}</p>
                 </div>
                 <div style={{ display: 'flex', width: '15%' }}>
@@ -126,7 +145,14 @@ const ChatMessages = ({ chat, setChats}) => {
                 <div ref={messagesEndRef} />
             </div>
             <div style={{ height: '5vh', background: 'white', margin: 'auto', borderColor: 'rgba(178, 178, 178, 0.5)', borderWidth: '1px' }}>
-                {isJoined ? <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => sendMessage(e, chat.chatId, currentMessage)} placeholder="Text your message" />
+                {isJoined
+                    ? <div style={{ display: 'flex', width: '100%', height: '100%' }}>
+                        <div style={{ height: '111%', width: '5%' }}>
+                            <label htmlFor="file" className={styles.file_label}></label>
+                            <input type="file" id="file" className={styles.file_input} multiple onChange={e => { uploadFiles(e.target.files); }} />
+                        </div>
+                        <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => sendMessage(e, chat.chatId, currentMessage)} placeholder="Text your message" />
+                    </div>
                     : <button className={styles.button} onClick={() => { JoinChat() }}>Join chat</button>}
             </div>
         </div>

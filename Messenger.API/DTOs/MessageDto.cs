@@ -12,6 +12,7 @@ namespace Messenger.API.DTOs
         public int SenderId { get; set; }
         public UserDto Sender { get; set; }
         public string Content { get; set; }
+        public List<AttachmentDto> Attachments { get; set; } = new List<AttachmentDto>();
 
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
 

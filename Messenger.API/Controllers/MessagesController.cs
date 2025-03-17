@@ -38,6 +38,7 @@ namespace Messenger.API.Controllers
             var response = await _context.Messages
                 .Where(m => m.ChatId == chatId)
                 .Include(m => m.Chat)
+                .Include(m => m.Attachments)
                 .Include(m => m.Sender)
                 .OrderBy(m => m.SentAt)
                 .Select(m => new MessageDto
@@ -63,6 +64,7 @@ namespace Messenger.API.Controllers
                         LastSeen = m.Sender.LastSeen,
                         PasswordHash = m.Sender.PasswordHash
                     },
+                    Attachments = m.Attachments.Select(a => new AttachmentDto { MessageId = a.MessageId, AttachmentId = a.AttachmentId, FileSize = a.FileSize, FileType = a.FileType, FileUrl = a.FileUrl}).ToList(),
                     Content = m.Content,
                     SentAt = m.SentAt,
                     IsDeleted = m.IsDeleted,
@@ -109,6 +111,7 @@ namespace Messenger.API.Controllers
                     LastSeen = message.Sender.LastSeen,
                     PasswordHash = message.Sender.PasswordHash
                 },
+                Attachments = message.Attachments.Select(a => new AttachmentDto { MessageId = a.MessageId, FileUrl = a.FileUrl, FileType = a.FileType, AttachmentId = a.AttachmentId, FileSize = a.FileSize }).ToList(),
                 Content = message.Content,
                 SentAt = message.SentAt,
                 IsDeleted = message.IsDeleted,
@@ -123,7 +126,7 @@ namespace Messenger.API.Controllers
             var user = await _context.Users.Where(u => u.UserId == int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefaultAsync();
             var chat = await _context.Chats.Where(c => c.ChatId == messageForCreationDto.ChatId).Include(c => c.GroupChatInfo).FirstOrDefaultAsync();
 
-            if (chat == null)
+            if (chat == null || user == null)
             {
                 return NotFound();
             }
@@ -138,7 +141,10 @@ namespace Messenger.API.Controllers
             await _context.Messages.AddAsync(message);
             await _context.SaveChangesAsync();
 
-            
+            var attachments = messageForCreationDto.Attachments.Select(a => new Attachment { FileSize = a.FileSize, FileType = a.FileType, FileUrl = a.FileUrl, Message = message, MessageId = message.MessageId });
+
+            await _context.Attachments.AddRangeAsync(attachments);
+            await _context.SaveChangesAsync();
 
             var response = new MessageDto
             {
@@ -166,6 +172,7 @@ namespace Messenger.API.Controllers
                     LastSeen = user.LastSeen,
                     PasswordHash = user.PasswordHash
                 },
+                Attachments = attachments.Select(a => new AttachmentDto { MessageId = a.MessageId, AttachmentId = a.AttachmentId, FileSize = a.FileSize, FileType = a.FileType, FileUrl = a.FileUrl }).ToList(),
                 Content = message.Content,
                 SentAt = message.SentAt,
                 IsDeleted = message.IsDeleted,
@@ -177,14 +184,14 @@ namespace Messenger.API.Controllers
             return CreatedAtRoute(routeName: "GetMessage", routeValues: new { message.MessageId }, value: response);
         }
         [HttpPut("{messageId}")]
-        public async Task<IActionResult> EditMessage(int messageId, string content)
+        public async Task<IActionResult> EditMessage([FromBody] MessageForEditDto messageForEditDto)
         {
-            var message = await _context.Messages.Where(m => m.MessageId == messageId).Include(m => m.Chat).Include(m => m.Sender).FirstOrDefaultAsync();
+            var message = await _context.Messages.Where(m => m.MessageId == messageForEditDto.MessageId).Include(m => m.Chat).Include(m => m.Sender).FirstOrDefaultAsync();
             if (message == null)
             {
                 return NotFound();
             }
-            message.Content = content;
+            message.Content = messageForEditDto.Content;
             message.IsEdited = true;
 
             await _context.SaveChangesAsync();
@@ -236,6 +243,8 @@ namespace Messenger.API.Controllers
 
             await _context.SaveChangesAsync();
 
+            var attachments = await _context.Attachments.Where(a => a.MessageId == messageId).ToListAsync();
+
             var messageDto = new MessageDto
             {
                 MessageId = message.MessageId,
@@ -259,6 +268,7 @@ namespace Messenger.API.Controllers
                     LastSeen = message.Sender.LastSeen,
                     PasswordHash = message.Sender.PasswordHash
                 },
+                Attachments = attachments.Select(a => new AttachmentDto { AttachmentId = a.AttachmentId, MessageId = a.MessageId, FileSize = a.FileSize, FileType = a.FileType, FileUrl = a.FileUrl }).ToList(),
                 Content = message.Content,
                 SentAt = message.SentAt,
                 IsDeleted = message.IsDeleted,

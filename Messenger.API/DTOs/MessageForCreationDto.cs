@@ -4,5 +4,6 @@
     {
         public int ChatId { get; set; }
         public string Content { get; set; }
+        public List<AttachmentForCreationDto>? Attachments { get; set; }
     }
 }

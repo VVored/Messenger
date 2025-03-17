@@ -2,10 +2,10 @@
   border: 1px solid #cccccc;
   background: #ffffff !important;
   outline: none;
-  height: 100%;
-  width: 99.5%;
+  height: 101%;
+  width: 100%;
   color: black;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .button {
@@ -36,4 +36,29 @@
   background-color: #f0f0f1;
   border-color: rgba(0, 0, 0, 0.15);
   color: rgba(0, 0, 0, 0.65);
+}
+
+.file_input {
+  display: none;
+}
+
+.file_label {
+  display: inline-block;
+  background-color:#cccccc;
+  color: white;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  font-size: 24px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.file_label:hover {
+  background-color: #afaeae;
+}
+
+/* Иконка плюса */
+.file_label::before {
+  content: '+';
 }

@@ -118,7 +118,7 @@ namespace Messenger.API.Hubs
         public async Task LeaveChat(string chatId)
         {
             var chat = await _context.Chats.Include(c => c.Members).FirstOrDefaultAsync(c => c.ChatId == int.Parse(chatId));
-            var member = await _context.ChatMembers.Include(cm => cm.User).FirstOrDefaultAsync(cm => cm.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value));
+            var member = await _context.ChatMembers.Include(cm => cm.User).FirstOrDefaultAsync(cm => cm.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value) & cm.ChatId == int.Parse(chatId));
 
 
             if (chat != null && member != null)

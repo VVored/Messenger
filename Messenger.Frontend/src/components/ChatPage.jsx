@@ -10,15 +10,6 @@ const ChatPage = () => {
     const [chats, setChats] = useState([]);
     const [createChatIsOpen, setCreateChatIsOpen] = useState(false);
     const [selectedChat, setSelectedChat] = useState(null);
-    const lastSelectedChat = usePrevious(selectedChat);
-
-    function usePrevious(value) {
-        const ref = useRef();
-        useEffect(() => {
-            ref.current = value;
-        });
-        return ref.current;
-    }
 
     const getUserChats = async () => {
         const token = localStorage.getItem('token');
@@ -51,7 +42,7 @@ const ChatPage = () => {
             <ChatList chats={chats} openCreateChat={openCreateChat} openChatMessages={openChatMessages} />
             <div style={{ width: "70vw", backgroundColor: "rgba(178, 178, 178, 0.5)" }}>
                 {
-                    createChatIsOpen ? <CreateChat /> : selectedChat ? <ChatMessages chats={chats} chat={selectedChat}></ChatMessages> : <h1 style={{ textAlign: "center" }}>Select a chat</h1>
+                    createChatIsOpen ? <CreateChat setChats={setChats} setSelectedChat={setSelectedChat} setCreateChatIsOpen={setCreateChatIsOpen}/> : selectedChat ? <ChatMessages setChats={setChats} chat={selectedChat}></ChatMessages> : <h1 style={{ textAlign: "center" }}>Select a chat</h1>
                 }
             </div>
         </div>
