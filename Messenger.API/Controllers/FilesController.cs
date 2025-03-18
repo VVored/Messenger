@@ -21,7 +21,7 @@ namespace Messenger.API.Controllers
                 return BadRequest("Maximum size can be 15mb");
             }
             string fileName = Guid.NewGuid().ToString() + extension;
-            string path = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+            string path = "D:\\petProjects\\Messenger\\messenger.frontend\\src\\imgs";
             using FileStream stream = new FileStream(Path.Combine(path, fileName), FileMode.Create);
 
             file.CopyTo(stream);
