@@ -6,14 +6,14 @@ const Message = ({ message }) => {
         <div className={styles.message}>
             <h3 className={styles.username}>{message.sender.firstName} {message.sender.lastName}</h3>
             <p style={{ margin: '3px 1px' }}>{message.content}</p>
-            <p style={{ margin: '3px 1px' }} className={styles.sentAt}>{(new Date(message.sentAt)).toLocaleString()}</p>
             {
                 message.attachments
                     ? message.attachments.map(attachment => {
-                        return <p style={{fontSize: '8px'}} key={attachment.fileUrl}>{attachment.fileUrl}</p>
+                        return <img style={{fontSize: '8px', maxHeight: '300px'}} src={require(`D:/petProjects/Messenger/Messenger.API/Uploads/${attachment.fileUrl}`)} alt='img' key={attachment.fileUrl}></img>
                     })
                     : <div></div>
             }
+            <p style={{ margin: '3px 1px' }} className={styles.sentAt}>{(new Date(message.sentAt)).toLocaleString()}</p>
         </div>
     )
 }
