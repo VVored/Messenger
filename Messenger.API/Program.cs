@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Messenger.API.Services;
+using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -41,6 +42,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
+builder.Services.AddSingleton<FileExtensionContentTypeProvider>();
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
 builder.Services.AddTransient<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSignalR();

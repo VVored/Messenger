@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Messenger.API.Controllers
 {
@@ -7,6 +8,26 @@ namespace Messenger.API.Controllers
     [ApiController]
     public class FilesController : ControllerBase
     {
+        private readonly FileExtensionContentTypeProvider _fileExtensionContentTypeProvider;
+        public FilesController(FileExtensionContentTypeProvider fileExtensionContentTypeProvider)
+        {
+            _fileExtensionContentTypeProvider = fileExtensionContentTypeProvider ?? throw new ArgumentNullException(nameof(fileExtensionContentTypeProvider));
+        }
+
+        [HttpGet("{fileUrl}")]
+        public IActionResult GetFile(string fileUrl)
+        {
+            if (!System.IO.File.Exists("D:/petProjects/Messenger/Messenger.API/Uploads/" + fileUrl))
+            {
+                return NotFound();
+            }
+            if (!_fileExtensionContentTypeProvider.TryGetContentType("D:/petProjects/Messenger/Messenger.API/Uploads/" + fileUrl, out var contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+            var bytes = System.IO.File.ReadAllBytes("D:/petProjects/Messenger/Messenger.API/Uploads/" + fileUrl);
+            return File(bytes, contentType, fileUrl);
+        }
         [HttpPost]
         public IActionResult UpdloadFile(IFormFile file)
         {

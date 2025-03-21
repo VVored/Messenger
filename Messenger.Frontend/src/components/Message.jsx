@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './Message.module.css'
+
 const Message = ({ message }) => {
 
     return (
@@ -9,7 +10,7 @@ const Message = ({ message }) => {
             {
                 message.attachments
                     ? message.attachments.map(attachment => {
-                        return <img style={{fontSize: '8px', maxHeight: '300px'}} src={require(`D:/petProjects/Messenger/Messenger.API/Uploads/${attachment.fileUrl}`)} alt='img' key={attachment.fileUrl}></img>
+                        return <img style={{ fontSize: '8px', maxHeight: '300px' }} src={`https://localhost:7192/api/files/${attachment.fileUrl}`} alt='img' key={attachment.fileUrl} />
                     })
                     : <div></div>
             }
