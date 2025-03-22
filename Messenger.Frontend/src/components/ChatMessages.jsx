@@ -5,6 +5,7 @@ import { HubConnectionBuilder } from "@microsoft/signalr"
 import styles from './ChatMessages.module.css';
 import styleChat from './Chat.module.css';
 import leaveChatImg from '../imgs/leave_chat.png';
+import FileAttachment from './FileAttachment';
 
 const ChatMessages = ({ chat, setChats }) => {
 
@@ -157,7 +158,7 @@ const ChatMessages = ({ chat, setChats }) => {
                     ? <div style={{ display: 'flex', height: '15vh', backgroundColor: 'white' }}>
                         {
                             Array.from(files).map(file => {
-                                return <img key={file.name} src={URL.createObjectURL(file)}></img>
+                                return <FileAttachment key={file.name} setFiles={setFiles} file={file}/>
                             })
                         }
                     </div>
