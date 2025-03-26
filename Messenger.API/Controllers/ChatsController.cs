@@ -3,12 +3,10 @@ using Messenger.API.DTOs;
 using Messenger.API.Hubs;
 using Messenger.API.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using System.Security.Permissions;
 
 namespace Messenger.API.Controllers
 {
@@ -22,21 +20,21 @@ namespace Messenger.API.Controllers
         public ChatsController(ApplicationDbContext context, IHubContext<ChatHub> hubContext)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            _hubContext= hubContext ?? throw new ArgumentNullException(nameof(hubContext));
+            _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ChatDto>>> GetChats(string searchQuery)
         {
             var chats = await _context.GroupChatInfos
-                .Where(info => info.GroupName.ToLower().Contains(searchQuery.ToLower()) || info.Description.ToLower().Contains(searchQuery.ToLower()))
                 .Include(info => info.Chat)
+                .Where(info => (info.GroupName.ToLower().Contains(searchQuery.ToLower()) || info.Description.ToLower().Contains(searchQuery.ToLower())) && info.Chat.ChatType == "public")
                 .OrderBy(info => info.ChatId)
-                .Select(info => new ChatDto { ChatId = info.Chat.ChatId, ChatType = info.Chat.ChatType, CreatedAt = info.Chat.CreatedAt, GroupName = info.GroupName, AvatarUrl = info.AvatarUrl, Description = info.Description})
+                .Select(info => new ChatDto { ChatId = info.Chat.ChatId, ChatType = info.Chat.ChatType, CreatedAt = info.Chat.CreatedAt, GroupName = info.GroupName, AvatarUrl = info.AvatarUrl, Description = info.Description })
                 .ToListAsync();
             return Ok(chats);
         }
         [HttpGet("my")]
-        public async Task<ActionResult<IEnumerable<ChatDto>>> GetMyChats() 
+        public async Task<ActionResult<IEnumerable<ChatDto>>> GetMyChats()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -48,28 +46,67 @@ namespace Messenger.API.Controllers
             return Ok(chats);
         }
         [HttpGet("{chatId}", Name = "GetChat")]
-        public async Task<ActionResult<ChatDto>> GetChat(int chatId)
+        public async Task<IActionResult> GetChat(int chatId)
         {
             var chat = await _context.Chats.Where(c => c.ChatId == chatId).FirstOrDefaultAsync();
             if (chat == null)
             {
                 return NotFound();
             }
-            var chatDto = new ChatDto
+            if (chat.ChatType == "public")
             {
-                ChatId = chat.ChatId,
-                ChatType = chat.ChatType,
-                CreatedAt = chat.CreatedAt,
-                AvatarUrl = chat.GroupChatInfo.AvatarUrl, 
-                GroupName = chat.GroupChatInfo.GroupName,
-                Description = chat.GroupChatInfo.Description,
-            };
-            return Ok(chatDto);
+                var chatDto = new ChatDto
+                {
+                    ChatId = chat.ChatId,
+                    ChatType = chat.ChatType,
+                    CreatedAt = chat.CreatedAt,
+                    AvatarUrl = chat.GroupChatInfo.AvatarUrl,
+                    GroupName = chat.GroupChatInfo.GroupName,
+                    Description = chat.GroupChatInfo.Description,
+                };
+
+                return Ok(chatDto);
+            }
+            else
+            {
+                var chatMembers = await _context.ChatMembers.Include(cm => cm.User).Where(cm => cm.ChatId == chatId).ToListAsync();
+                var firstUser = chatMembers.First().User;
+                var secondUser = chatMembers.Last().User;
+                var privateChatDto = new PrivateChatDto
+                {
+                    ChatId = chat.ChatId,
+                    FirstUser = new UserDto
+                    {
+                        UserId = firstUser.UserId,
+                        FirstName = firstUser.FirstName,
+                        LastName = firstUser.LastName,
+                        Username = firstUser.Username,
+                        AvatarUrl = firstUser.AvatarUrl,
+                        CreatedAt = firstUser.CreatedAt,
+                        Email = firstUser.Email,
+                        LastSeen = firstUser.LastSeen,
+                        PasswordHash = firstUser.PasswordHash
+                    },
+                    SecondUser = new UserDto 
+                    {
+                        UserId = secondUser.UserId,
+                        FirstName = secondUser.FirstName,
+                        LastName = secondUser.LastName,
+                        AvatarUrl= secondUser.AvatarUrl,
+                        CreatedAt = secondUser.CreatedAt,
+                        Email = secondUser.Email,
+                        LastSeen = secondUser.LastSeen,
+                        PasswordHash = secondUser.PasswordHash
+                    }
+                };
+
+                return Ok(privateChatDto);
+            }
         }
         [HttpPost]
         public async Task<ActionResult<ChatDto>> CreateChat([FromBody] ChatForCreationDto chatForCreationDto)
         {
-            var createdChat = new Chat { ChatType = chatForCreationDto.ChatType};
+            var createdChat = new Chat { ChatType = chatForCreationDto.ChatType };
             await _context.Chats.AddAsync(createdChat);
             await _context.SaveChangesAsync();
             var chatInfo = new GroupChatInfo { AvatarUrl = chatForCreationDto.AvatarUrl, Chat = createdChat, ChatId = createdChat.ChatId, Description = chatForCreationDto.Description, GroupName = chatForCreationDto.GroupName };
@@ -80,7 +117,7 @@ namespace Messenger.API.Controllers
             {
                 return BadRequest();
             }
-            var chatMember = new ChatMember { Chat = createdChat, ChatId = createdChat.ChatId, User = admin, Role = "Admin", UserId = admin.UserId};
+            var chatMember = new ChatMember { Chat = createdChat, ChatId = createdChat.ChatId, User = admin, Role = "Admin", UserId = admin.UserId, JoinedAt = createdChat.CreatedAt };
             await _context.ChatMembers.AddAsync(chatMember);
             await _context.SaveChangesAsync();
             var response = new ChatDto
@@ -91,6 +128,59 @@ namespace Messenger.API.Controllers
                 AvatarUrl = chatInfo.AvatarUrl,
                 GroupName = chatInfo.GroupName,
                 Description = chatInfo.Description,
+            };
+
+            return CreatedAtRoute(routeName: "GetChat", routeValues: new { response.ChatId }, value: response);
+        }
+        [HttpPost]
+        public async Task<ActionResult<ChatDto>> CreateChat([FromBody] PrivateChatForCreationDto chatForCreationDto)
+        {
+            var createdChat = new Chat { ChatType = "private" };
+            await _context.Chats.AddAsync(createdChat);
+            await _context.SaveChangesAsync();
+            var firstUser = _context.Users.Where(u => u.UserId == int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefault();
+            if (firstUser == null)
+            {
+                return BadRequest();
+            }
+            var firstChatMember = new ChatMember { Chat = createdChat, ChatId = createdChat.ChatId, User = firstUser, Role = "Admin", UserId = firstUser.UserId, JoinedAt = createdChat.CreatedAt };
+            await _context.ChatMembers.AddAsync(firstChatMember);
+            await _context.SaveChangesAsync();
+            var secondUser = _context.Users.Where(u => u.UserId == chatForCreationDto.SecondUserId).FirstOrDefault();
+            if (secondUser == null)
+            {
+                return BadRequest();
+            }
+            var secondChatMember = new ChatMember { User = secondUser, UserId = secondUser.UserId, Chat = createdChat, ChatId = createdChat.ChatId, JoinedAt = createdChat.CreatedAt, Role = "Admin" };
+            await _context.ChatMembers.AddAsync(secondChatMember);
+            await _context.SaveChangesAsync();
+            var response = new PrivateChatDto
+            {
+                ChatId = createdChat.ChatId,
+                FirstUser = new UserDto
+                {
+                    UserId = firstUser.UserId,
+                    FirstName = firstUser.FirstName,
+                    LastName = firstUser.LastName,
+                    LastSeen = firstUser.LastSeen,
+                    AvatarUrl = firstUser.AvatarUrl,
+                    CreatedAt = createdChat.CreatedAt,
+                    Email = firstUser.Email,
+                    PasswordHash = firstUser.PasswordHash,
+                    Username = firstUser.Username,
+                },
+                SecondUser = new UserDto
+                {
+                    UserId = secondUser.UserId,
+                    FirstName = secondUser.FirstName,
+                    LastName = secondUser.LastName,
+                    LastSeen = secondUser.LastSeen,
+                    AvatarUrl = secondUser.AvatarUrl,
+                    CreatedAt = secondUser.CreatedAt,
+                    Email = secondUser.Email,
+                    PasswordHash = secondUser.PasswordHash,
+                    Username = secondUser.Username,
+                }
             };
 
             return CreatedAtRoute(routeName: "GetChat", routeValues: new { response.ChatId }, value: response);

@@ -11,6 +11,9 @@ namespace Messenger.API.Hubs
     [Authorize]
     public class ChatHub : Hub
     {
+        private readonly static List<UserDto> _connections = new List<UserDto>();
+        private readonly static Dictionary<string, string> _connectionsMap = new Dictionary<string, string>();
+
         private readonly ApplicationDbContext _context;
 
         public ChatHub(ApplicationDbContext context)
@@ -141,6 +144,39 @@ namespace Messenger.API.Hubs
 
                 await Clients.Client(Context.ConnectionId).SendAsync("leaveChatMember", response);
             }
+        }
+        public override Task OnConnectedAsync()
+        {
+            var user = _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefault();
+            var userDto = new UserDto
+            {
+                UserId = user.UserId,
+                AvatarUrl = user.AvatarUrl,
+                CreatedAt = user.CreatedAt,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                LastSeen = user.LastSeen,
+                PasswordHash = user.PasswordHash,
+                Username = user.Username
+            };
+
+            if (!_connections.Any(u => u.UserId == userDto.UserId))
+            {
+                _connections.Add(userDto);
+                _connectionsMap.Add(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value, Context.ConnectionId);
+            }
+            
+            return base.OnConnectedAsync();
+        }
+        public override Task OnDisconnectedAsync(Exception? exception)
+        {
+            var user = _connections.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).First();
+
+            _connections.Remove(user);
+
+            _connectionsMap.Remove(user.UserId.ToString());
+            return base.OnDisconnectedAsync(exception);
         }
     }
 }

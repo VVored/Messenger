@@ -1,18 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import axios from 'axios';
 import Message from './Message';
-import { HubConnectionBuilder } from "@microsoft/signalr"
 import styles from './ChatMessages.module.css';
 import styleChat from './Chat.module.css';
 import leaveChatImg from '../imgs/leave_chat.png';
 import FileAttachment from './FileAttachment';
 
-const ChatMessages = ({ chat, setChats }) => {
+const ChatMessages = ({ connection, setConnection, chat, setChats }) => {
 
     const [messages, setMessages] = useState([]);
     const messagesEndRef = useRef(null);
     const [currentMessage, setCurrentMessage] = useState('');
-    const [connection, setConnection] = useState(null);
     const [isJoined, setIsJoined] = useState(false);
     const [amountOfVh, setAmountOfVh] = useState(85);
     const [files, setFiles] = useState([]);
@@ -41,19 +39,7 @@ const ChatMessages = ({ chat, setChats }) => {
         return response;
     }
 
-    const StartConnection = async (chatId) => {
-        const connection = new HubConnectionBuilder()
-            .withUrl(`https://localhost:7192/chat?access_token=${localStorage.getItem('token')}`)
-            .build();
-        connection.start().then(res => {
-            connection.invoke("JoinGroup", chatId + '')
-                .catch(err => {
-                    console.log(err);
-                });
-
-        }).catch(err => {
-            console.log(err);
-        });
+    const ConfigureConnection = async () => {
         connection.on('newMessage', message => {
             if (message.chatId === chat.chatId) {
                 setMessages(prev => [...prev, message]);
@@ -72,10 +58,10 @@ const ChatMessages = ({ chat, setChats }) => {
         setConnection(connection);
     }
 
-    const CloseConnection = () => {
-        connection?.stop();
-        setConnection(null);
-    }
+    // const CloseConnection = () => {
+    //     connection?.stop();
+    //     setConnection(null);
+    // }
 
     const sendMessage = async (e, chatId, content) => {
         if (e.key === 'Enter') {
@@ -91,6 +77,9 @@ const ChatMessages = ({ chat, setChats }) => {
                         'Content-Type': 'application/json'
                     }
                 });
+                setFiles([]);
+                setCurrentMessage('');
+                e.target.value = '';
             }
         }
     }
@@ -123,8 +112,7 @@ const ChatMessages = ({ chat, setChats }) => {
         IsUserJoined();
         setIsJoined(IsUserJoined());
         getChatMessages(chat.chatId).then(response => { setMessages(response.data) });
-        CloseConnection();
-        StartConnection(chat.chatId);
+        ConfigureConnection();
     }, [chat]);
 
     useEffect(scrollToBottom, [messages]);
@@ -138,14 +126,14 @@ const ChatMessages = ({ chat, setChats }) => {
         <div style={{ minHeight: '100vh' }}>
             <div style={{ display: 'flex', height: '10vh', background: 'white' }}>
                 <div style={{ display: 'flex', cursor: 'pointer', width: '85%', margin: 'auto 0' }} onClick={() => { console.log('1'); }}>
-                    <img className={styleChat.chat_avatar} src={require(`D:/petProjects/Messenger/Messenger.API/Uploads/${chat.avatarUrl}`)} alt="" />
+                    <img className={styleChat.chat_avatar} src={`https://localhost:7192/api/files/${chat.avatarUrl}`} alt="" />
                     <p>{chat.groupName}</p>
                 </div>
                 <div style={{ display: 'flex', width: '15%' }}>
                     {isJoined ? <button className={styles.button} style={{ border: 'none' }} onClick={() => LeaveChat()}><img style={{ maxHeight: '50px' }} src={leaveChatImg} alt='' /></button> : <div></div>}
                 </div>
             </div>
-            <div style={{ height: amountOfVh + 'vh', overflowY: 'auto'}}>
+            <div style={{ height: amountOfVh + 'vh', overflowY: 'auto' }}>
                 {
                     messages.map(message => {
                         return <Message key={message.messageId} message={message} />
@@ -158,7 +146,7 @@ const ChatMessages = ({ chat, setChats }) => {
                     ? <div style={{ display: 'flex', height: '15vh', backgroundColor: 'white' }}>
                         {
                             Array.from(files).map(file => {
-                                return <FileAttachment key={file.name} setFiles={setFiles} file={file}/>
+                                return <FileAttachment key={file.name} setFiles={setFiles} file={file} />
                             })
                         }
                     </div>
