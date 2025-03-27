@@ -40,9 +40,9 @@ const CreateChat = ({setChats, setSelectedChat, setCreateChatIsOpen}) => {
     return (
         <div className={style.container}>
             <FilePicker setAvatarUrl={setAvatarUrl}/>
-            <input className={style.input} type="text" value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Group chat name" />
-            <input className={style.input} type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descrtiption" />
-            <button className={style.button} onClick={() => createGroupChat()}>Create chat</button>
+            <input className={style.input} type="text" value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Название группового чата" />
+            <input className={style.input} type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Описание чата" />
+            <button className={style.button} onClick={() => createGroupChat()}>Создать</button>
             {error ?? <p className={style.error}>{error}</p>}
         </div>
     );

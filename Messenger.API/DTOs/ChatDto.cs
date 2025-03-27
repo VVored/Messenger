@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Messenger.API.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Messenger.API.DTOs
 {
@@ -12,5 +13,6 @@ namespace Messenger.API.DTOs
         public string GroupName { get; set; }
         public string Description { get; set; }
         public string AvatarUrl { get; set; }
+        public List<ChatMemberDto> ChatMembers { get; set; } = new List<ChatMemberDto>();
     }
 }

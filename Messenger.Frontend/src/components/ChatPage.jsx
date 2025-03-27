@@ -4,6 +4,7 @@ import ChatList from './ChatList';
 import ChatMessages from './ChatMessages';
 import CreateChat from './CreateChat';
 import { HubConnectionBuilder } from "@microsoft/signalr";
+import Profile from './Profile';
 
 
 
@@ -12,27 +13,13 @@ const ChatPage = () => {
     const [createChatIsOpen, setCreateChatIsOpen] = useState(false);
     const [selectedChat, setSelectedChat] = useState(null);
     const [connection, setConnection] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
 
     const StartConnection = async () => {
         const connection = new HubConnectionBuilder()
             .withUrl(`https://localhost:7192/chat?access_token=${localStorage.getItem('token')}`)
             .build();
         connection.start();
-        // connection.on('newMessage', message => {
-        //     if (message.chatId === chat.chatId) {
-        //         setMessages(prev => [...prev, message]);
-        //     }
-        // });
-        // connection.on('userJoinChat', response => {
-        //     console.log('userJoinedChat');
-        //     setChats(prev => [...prev, chat]);
-        //     setIsJoined(true);
-        // });
-        // connection.on('leaveChatMember', response => {
-        //     console.log('leaveChatMember');
-        //     setChats(prev => prev.filter(item => item !== chat));
-        //     setIsJoined(false);
-        // });
         setConnection(connection);
     }
 
@@ -79,11 +66,18 @@ const ChatPage = () => {
     return (
         <div style={{ display: "flex", height: '100vh', overflowY: 'hidden' }}>
             <ChatList chats={chats} openCreateChat={openCreateChat} openChatMessages={openChatMessages} />
-            <div style={{ width: "70vw", backgroundColor: "rgba(178, 178, 178, 0.5)" }}>
+            <div style={{ width: '100%', backgroundColor: "rgba(178, 178, 178, 0.5)" }}>
                 {
-                    createChatIsOpen ? <CreateChat setChats={setChats} setSelectedChat={setSelectedChat} setCreateChatIsOpen={setCreateChatIsOpen} /> : selectedChat ? <ChatMessages connection={connection} setConnection={setConnection} setChats={setChats} chat={selectedChat}></ChatMessages> : <h1 style={{ textAlign: "center" }}>Select a chat</h1>
+                    createChatIsOpen ? <CreateChat setChats={setChats} setSelectedChat={setSelectedChat} setCreateChatIsOpen={setCreateChatIsOpen} /> : selectedChat ? <ChatMessages connection={connection} setSelectedUser={setSelectedUser} setConnection={setConnection} setChats={setChats} chat={selectedChat}></ChatMessages> : <h1 style={{ textAlign: "center" }}>Select a chat</h1>
                 }
             </div>
+            {
+                selectedUser
+                    ? <Profile selectedUser={selectedUser} setSelectedUser={setSelectedUser}></Profile>
+                    : <div>
+
+                    </div>
+            }
         </div>
     )
 }

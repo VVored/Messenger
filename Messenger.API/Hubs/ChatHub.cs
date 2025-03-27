@@ -23,64 +23,64 @@ namespace Messenger.API.Hubs
 
         public async Task JoinGroup(string chatId)
         {
-/*            var user = await _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefaultAsync();
-            var chat = await _context.Chats.Where(c => c.ChatId == int.Parse(chatId)).FirstOrDefaultAsync();
+            /*            var user = await _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefaultAsync();
+                        var chat = await _context.Chats.Where(c => c.ChatId == int.Parse(chatId)).FirstOrDefaultAsync();
 
-            if (user != null && chat != null)
-            {
-                await _context.ChatMembers.AddAsync(new ChatMember
-                {
-                    Chat = chat,
-                    User = user,
-                    JoinedAt = DateTime.UtcNow,
-                    Role = "User"
-                });
-                await _context.SaveChangesAsync();
+                        if (user != null && chat != null)
+                        {
+                            await _context.ChatMembers.AddAsync(new ChatMember
+                            {
+                                Chat = chat,
+                                User = user,
+                                JoinedAt = DateTime.UtcNow,
+                                Role = "User"
+                            });
+                            await _context.SaveChangesAsync();
 
-                var userResponse = new UserDto
-                {
-                    AvatarUrl = user.AvatarUrl,
-                    UserId = user.UserId,
-                    Username = user.Username,
-                    Email = user.Email,
-                    PasswordHash = user.PasswordHash,
-                    CreatedAt = user.CreatedAt,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    LastSeen = user.LastSeen
-                };*/
+                            var userResponse = new UserDto
+                            {
+                                AvatarUrl = user.AvatarUrl,
+                                UserId = user.UserId,
+                                Username = user.Username,
+                                Email = user.Email,
+                                PasswordHash = user.PasswordHash,
+                                CreatedAt = user.CreatedAt,
+                                FirstName = user.FirstName,
+                                LastName = user.LastName,
+                                LastSeen = user.LastSeen
+                            };*/
 
-                await Groups.AddToGroupAsync(Context.ConnectionId, chatId);
-/*
-                await Clients.OthersInGroup(chatId).SendAsync("newMember", userResponse);
-            }*/
+            await Groups.AddToGroupAsync(Context.ConnectionId, chatId);
+            /*
+                            await Clients.OthersInGroup(chatId).SendAsync("newMember", userResponse);
+                        }*/
         }
         public async Task LeaveGroup(string chatId)
         {
-/*            var chatMember = await _context.ChatMembers.Where(cm => cm.ChatId == int.Parse(chatId) && cm.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).Include(cm => cm.User).FirstOrDefaultAsync();
+            /*            var chatMember = await _context.ChatMembers.Where(cm => cm.ChatId == int.Parse(chatId) && cm.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).Include(cm => cm.User).FirstOrDefaultAsync();
 
-            if (chatMember != null)
-            {
-                var userResponse = new UserDto
-                {
-                    AvatarUrl = chatMember.User.AvatarUrl,
-                    UserId = chatMember.User.UserId,
-                    Username = chatMember.User.Username,
-                    Email = chatMember.User.Email,
-                    PasswordHash = chatMember.User.PasswordHash,
-                    CreatedAt = chatMember.User.CreatedAt,
-                    FirstName = chatMember.User.FirstName,
-                    LastName = chatMember.User.LastName,
-                    LastSeen = chatMember.User.LastSeen
-                };
+                        if (chatMember != null)
+                        {
+                            var userResponse = new UserDto
+                            {
+                                AvatarUrl = chatMember.User.AvatarUrl,
+                                UserId = chatMember.User.UserId,
+                                Username = chatMember.User.Username,
+                                Email = chatMember.User.Email,
+                                PasswordHash = chatMember.User.PasswordHash,
+                                CreatedAt = chatMember.User.CreatedAt,
+                                FirstName = chatMember.User.FirstName,
+                                LastName = chatMember.User.LastName,
+                                LastSeen = chatMember.User.LastSeen
+                            };
 
-                _context.ChatMembers.Remove(chatMember);
-                await _context.SaveChangesAsync();
-*/
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId);
-                
-/*                await Clients.OthersInGroup(chatId).SendAsync("memberLeave", userResponse);
-            }*/
+                            _context.ChatMembers.Remove(chatMember);
+                            await _context.SaveChangesAsync();
+            */
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId);
+
+            /*                await Clients.OthersInGroup(chatId).SendAsync("memberLeave", userResponse);
+                        }*/
         }
         public async Task JoinChat(string chatId)
         {
@@ -145,6 +145,59 @@ namespace Messenger.API.Hubs
                 await Clients.Client(Context.ConnectionId).SendAsync("leaveChatMember", response);
             }
         }
+
+        public async Task CreateChat(string secondUserId)
+        {
+            var createdChat = new Chat { ChatType = "private" };
+            var firstUser = _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefault();
+            var firstChatMember = new ChatMember { Chat = createdChat, ChatId = createdChat.ChatId, User = firstUser, Role = "Admin", UserId = firstUser.UserId, JoinedAt = createdChat.CreatedAt };
+            var secondUser = _context.Users.Where(u => u.UserId == int.Parse(secondUserId)).FirstOrDefault();
+            var secondChatMember = new ChatMember { User = secondUser, UserId = secondUser.UserId, Chat = createdChat, ChatId = createdChat.ChatId, JoinedAt = createdChat.CreatedAt, Role = "Admin" };
+
+            if (!_connectionsMap.TryGetValue(secondUserId, out var secondUserConnectionId))
+            {
+                if (firstUser != null && secondUser != null)
+                {
+                    await _context.Chats.AddAsync(createdChat);
+                    await _context.SaveChangesAsync();
+                    await _context.ChatMembers.AddAsync(firstChatMember);
+                    await _context.SaveChangesAsync();
+                    await _context.ChatMembers.AddAsync(secondChatMember);
+                    await _context.SaveChangesAsync();
+                    var response = new ChatDto
+                    {
+                        Description = "",
+                        AvatarUrl = "",
+                        ChatId = createdChat.ChatId,
+                        ChatType = createdChat.ChatType,
+                        CreatedAt = createdChat.CreatedAt,
+                        GroupName = firstUser.UserId + " " + secondUser.UserId,
+                        ChatMembers = new List<ChatMemberDto>
+                        {
+                            new ChatMemberDto
+                            {
+                                JoinedAt = firstChatMember.JoinedAt,
+                                Role = firstChatMember.Role,
+                                User = new UserDto
+                                {
+                                    AvatarUrl = firstUser.AvatarUrl,
+                                    CreatedAt = firstUser.CreatedAt,
+                                    Email = firstUser.Email,
+                                    FirstName = firstUser.FirstName,
+                                    LastName = firstUser.LastName,
+                                    LastSeen = firstUser.LastSeen,
+                                    PasswordHash = firstUser.PasswordHash,
+                                    UserId = firstUser.UserId,
+                                    Username = firstUser.Username,
+                                }
+                            }
+                        }
+                    };
+                    await Clients.Caller.SendAsync("createPrivateChat", response);
+                    await Clients.Client(secondUserConnectionId).SendAsync("createPrivateChat", response);
+                }
+            }
+        }
         public override Task OnConnectedAsync()
         {
             var user = _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefault();
@@ -166,7 +219,7 @@ namespace Messenger.API.Hubs
                 _connections.Add(userDto);
                 _connectionsMap.Add(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value, Context.ConnectionId);
             }
-            
+
             return base.OnConnectedAsync();
         }
         public override Task OnDisconnectedAsync(Exception? exception)

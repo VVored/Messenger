@@ -19,7 +19,7 @@ namespace Messenger.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Reqister([FromBody] RegisterRequest registerRequest)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
             if (_context.Users.Any(u => u.Username == registerRequest.Username))
             {

@@ -5,8 +5,9 @@ import styles from './ChatMessages.module.css';
 import styleChat from './Chat.module.css';
 import leaveChatImg from '../imgs/leave_chat.png';
 import FileAttachment from './FileAttachment';
+import { jwtDecode } from 'jwt-decode';
 
-const ChatMessages = ({ connection, setConnection, chat, setChats }) => {
+const ChatMessages = ({ connection, setSelectedUser, setConnection, chat, setChats }) => {
 
     const [messages, setMessages] = useState([]);
     const messagesEndRef = useRef(null);
@@ -14,6 +15,8 @@ const ChatMessages = ({ connection, setConnection, chat, setChats }) => {
     const [isJoined, setIsJoined] = useState(false);
     const [amountOfVh, setAmountOfVh] = useState(85);
     const [files, setFiles] = useState([]);
+    const [privateChatAvatarUrl, setPrivateChatAvatarUrl] = useState('');
+    const [privateChatName, setPrivateChatName] = useState('');
 
     const scrollToBottom = () => {
         messagesEndRef.current.scrollIntoView({ behaivor: 'smooth' });
@@ -57,11 +60,6 @@ const ChatMessages = ({ connection, setConnection, chat, setChats }) => {
         })
         setConnection(connection);
     }
-
-    // const CloseConnection = () => {
-    //     connection?.stop();
-    //     setConnection(null);
-    // }
 
     const sendMessage = async (e, chatId, content) => {
         if (e.key === 'Enter') {
@@ -109,6 +107,17 @@ const ChatMessages = ({ connection, setConnection, chat, setChats }) => {
     }
 
     useEffect(() => {
+        setPrivateChatAvatarUrl('');
+        setPrivateChatName('');
+        const token = localStorage.getItem('token');
+        const decoded = jwtDecode(token);
+        chat.chatMembers.forEach(chatMember => {
+            if (chatMember.user.userId + '' !== decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]) {
+                setPrivateChatAvatarUrl(chatMember.user.avatarUrl);
+                setPrivateChatName(chatMember.user.username);
+            }
+        });
+
         IsUserJoined();
         setIsJoined(IsUserJoined());
         getChatMessages(chat.chatId).then(response => { setMessages(response.data) });
@@ -120,23 +129,35 @@ const ChatMessages = ({ connection, setConnection, chat, setChats }) => {
     useEffect(() => {
         files.length > 0 ? setAmountOfVh(70) : setAmountOfVh(85);
         scrollToBottom();
-    }, [files])
+    }, [files]);
 
     return (
         <div style={{ minHeight: '100vh' }}>
             <div style={{ display: 'flex', height: '10vh', background: 'white' }}>
-                <div style={{ display: 'flex', cursor: 'pointer', width: '85%', margin: 'auto 0' }} onClick={() => { console.log('1'); }}>
-                    <img className={styleChat.chat_avatar} src={`https://localhost:7192/api/files/${chat.avatarUrl}`} alt="" />
-                    <p>{chat.groupName}</p>
+                <div style={{ display: 'flex', cursor: 'pointer', width: '85%', margin: 'auto 0' }}>
+                    {
+                        chat.chatType === 'public'
+                            ? <img className={styleChat.chat_avatar} src={`https://localhost:7192/api/files/${chat.avatarUrl}`} alt='img' />
+                            : <img className={styleChat.chat_avatar} src={`https://localhost:7192/api/files/${privateChatAvatarUrl}`} alt='img' />
+                    }
+                    {
+                        chat.chatType === 'public'
+                            ? <p>{chat.groupName}</p>
+                            : <p>{privateChatName}</p>
+                    }
                 </div>
-                <div style={{ display: 'flex', width: '15%' }}>
-                    {isJoined ? <button className={styles.button} style={{ border: 'none' }} onClick={() => LeaveChat()}><img style={{ maxHeight: '50px' }} src={leaveChatImg} alt='' /></button> : <div></div>}
-                </div>
+                {
+                    chat.chatType === 'public'
+                        ? <div style={{ display: 'flex', width: '15%' }}>
+                            {isJoined ? <button className={styles.button} style={{ border: 'none' }} onClick={() => LeaveChat()}><img style={{ maxHeight: '50px' }} src={leaveChatImg} alt='' /></button> : <div></div>}
+                        </div>
+                        : <div></div>
+                }
             </div>
             <div style={{ height: amountOfVh + 'vh', overflowY: 'auto' }}>
                 {
                     messages.map(message => {
-                        return <Message key={message.messageId} message={message} />
+                        return <Message key={message.messageId} message={message} setSelectedUser={setSelectedUser} />
                     })
                 }
                 <div ref={messagesEndRef} />
@@ -162,7 +183,7 @@ const ChatMessages = ({ connection, setConnection, chat, setChats }) => {
                                 <label htmlFor="file" className={styles.file_label}></label>
                                 <input accept='image/png, image/gif, image/jpeg' type="file" id="file" className={styles.file_input} multiple onChange={e => { setFiles(e.target.files); }} />
                             </div>
-                            <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => sendMessage(e, chat.chatId, currentMessage)} placeholder="Text your message" />
+                            <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => sendMessage(e, chat.chatId, currentMessage)} placeholder="Напишите сообщение..." />
                         </div>
                         : <button className={styles.button} onClick={() => { JoinChat() }}>Join chat</button>}
             </div>
