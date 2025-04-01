@@ -1,13 +1,14 @@
 ﻿using Messenger.API.Data;
+using Messenger.API.DTOs;
 using Messenger.API.Models;
 using Messenger.API.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Messenger.API.Controllers
 {
     [Route("api/users")]
-    [ApiController] 
+    [ApiController]
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -16,6 +17,52 @@ namespace Messenger.API.Controllers
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
+        }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers(string searchQuery)
+        {
+            var users = await _context.Users
+                .Where(u => u.Username.ToLower().Contains(searchQuery.ToLower()) || u.FirstName.ToLower().Contains(searchQuery.ToLower()) || u.LastName.ToLower().Contains(searchQuery.ToLower()) || (u.FirstName.ToLower() + " " + u.LastName.ToLower()).Contains(searchQuery.ToLower()))
+                .Select(u => new UserDto
+                {
+                    Username = u.Username,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    AvatarUrl = u.AvatarUrl,
+                    CreatedAt = u.CreatedAt,
+                    Email = u.Email,
+                    LastSeen = u.LastSeen,
+                    PasswordHash = u.PasswordHash,
+                    UserId = u.UserId,
+                })
+                .ToListAsync();
+            if (users == null)
+            {
+                return NotFound();
+            }
+            return Ok(users);
+        }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserDto>> GetUser(int id)
+        {
+            var user = await _context.Users.Where(u => u.UserId == id).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var response = new UserDto
+            {
+                AvatarUrl = user.AvatarUrl,
+                CreatedAt = user.CreatedAt,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                LastSeen = user.LastSeen,
+                Username = user.Username,
+                PasswordHash = user.PasswordHash,
+                UserId = id
+            };
+            return Ok(response);
         }
 
         [HttpPost("register")]

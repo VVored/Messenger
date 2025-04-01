@@ -3,8 +3,20 @@ import styles from './Message.module.css'
 
 const Message = ({ message, setSelectedUser }) => {
 
+    // const [isMessageMine, setIsMessageMine] = useState(false);
+
+    // useEffect(() => {
+    //     const token = localStorage.getItem('token');
+    //     const decoded = jwtDecode(token);
+    //     setIsMessageMine(false);
+    //     if (decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] === message.sender.userId + '') {
+    //         setIsMessageMine(true);
+    //     }
+    // }, [])
+
     return (
-        <div style={{display: 'flex'}}>
+        <div style={{ display: 'flex' }}>
+            <img onClick={() => { setSelectedUser(message.sender);}} className={styles.user_avatar} src={`https://localhost:7192/api/files/${message.sender.avatarUrl}`} alt='avatar'/>
             <div className={styles.message}>
                 <h3 className={styles.username} onClick={() => { setSelectedUser(message.sender); }}>{message.sender.firstName} {message.sender.lastName}</h3>
                 <p style={{ margin: '3px 1px' }}>{message.content}</p>

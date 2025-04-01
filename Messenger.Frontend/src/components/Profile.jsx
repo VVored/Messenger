@@ -1,9 +1,22 @@
 import React, { useEffect, useState } from 'react'
 import { jwtDecode } from 'jwt-decode';
 
-const Profile = ({ selectedUser, setSelectedUser }) => {
+const Profile = ({ selectedUser, setSelectedUser, connection, chats, openChatMessages }) => {
 
     const [isSelectedUserAuthorizeNow, setIsSelectedUserAuthorizeNow] = useState(false);
+
+    const createPrivateChat = async () => {
+        connection.invoke('CreatePrivateChat', selectedUser.userId + '');
+    }
+
+    const getPrivateChat = () => {
+        const token = localStorage.getItem('token');
+        const decoced = jwtDecode(token);
+        const userId = decoced["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+        const selectedUserId = selectedUser.userId;
+        const privateChat = chats.find(chat => chat.chatType === 'private' && (chat.groupName === userId + ' ' + selectedUserId || chat.groupName === selectedUserId + ' ' + userId));
+        return privateChat;
+    }
 
     useEffect(() => {
         setIsSelectedUserAuthorizeNow(false);
@@ -24,8 +37,7 @@ const Profile = ({ selectedUser, setSelectedUser }) => {
             {
                 isSelectedUserAuthorizeNow
                     ? <button style={{ backgroundColor: 'rgba(178, 178, 178)', border: 'none', width: '100%', cursor: 'pointer', fontWeight: '700', color: 'white', padding: '2%' }}>Отредактировать профиль</button>
-                    : <button style={{ backgroundColor: 'rgba(178, 178, 178)', border: 'none', width: '100%', cursor: 'pointer', fontWeight: '700', color: 'white', padding: '2%' }}>Отправить сообщение</button>
-
+                    : <button onClick={() => { const privateChat = getPrivateChat(); if (privateChat) { openChatMessages(privateChat) } else { createPrivateChat() } }} style={{ backgroundColor: 'rgba(178, 178, 178)', border: 'none', width: '100%', cursor: 'pointer', fontWeight: '700', color: 'white', padding: '2%' }}>Отправить сообщение</button>
             }
             <p>Имя пользователя: <b>@{`${selectedUser.username}`}</b></p>
         </div>

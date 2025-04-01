@@ -146,33 +146,35 @@ namespace Messenger.API.Hubs
             }
         }
 
-        public async Task CreateChat(string secondUserId)
+        public async Task CreatePrivateChat(string secondUserId)
         {
             var createdChat = new Chat { ChatType = "private" };
             var firstUser = _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefault();
             var firstChatMember = new ChatMember { Chat = createdChat, ChatId = createdChat.ChatId, User = firstUser, Role = "Admin", UserId = firstUser.UserId, JoinedAt = createdChat.CreatedAt };
             var secondUser = _context.Users.Where(u => u.UserId == int.Parse(secondUserId)).FirstOrDefault();
             var secondChatMember = new ChatMember { User = secondUser, UserId = secondUser.UserId, Chat = createdChat, ChatId = createdChat.ChatId, JoinedAt = createdChat.CreatedAt, Role = "Admin" };
+            var chatInfo = new GroupChatInfo { AvatarUrl = "", Chat = createdChat, ChatId = createdChat.ChatId, Description = "", GroupName = firstUser.UserId + " " + secondUser.UserId };
 
-            if (!_connectionsMap.TryGetValue(secondUserId, out var secondUserConnectionId))
+            if (firstUser != null && secondUser != null)
             {
-                if (firstUser != null && secondUser != null)
+                await _context.Chats.AddAsync(createdChat);
+                await _context.SaveChangesAsync();
+                await _context.ChatMembers.AddAsync(firstChatMember);
+                await _context.SaveChangesAsync();
+                await _context.ChatMembers.AddAsync(secondChatMember);
+                await _context.SaveChangesAsync();
+                await _context.GroupChatInfos.AddAsync(chatInfo);
+                await _context.SaveChangesAsync();
+
+                var response = new ChatDto
                 {
-                    await _context.Chats.AddAsync(createdChat);
-                    await _context.SaveChangesAsync();
-                    await _context.ChatMembers.AddAsync(firstChatMember);
-                    await _context.SaveChangesAsync();
-                    await _context.ChatMembers.AddAsync(secondChatMember);
-                    await _context.SaveChangesAsync();
-                    var response = new ChatDto
-                    {
-                        Description = "",
-                        AvatarUrl = "",
-                        ChatId = createdChat.ChatId,
-                        ChatType = createdChat.ChatType,
-                        CreatedAt = createdChat.CreatedAt,
-                        GroupName = firstUser.UserId + " " + secondUser.UserId,
-                        ChatMembers = new List<ChatMemberDto>
+                    Description = "",
+                    AvatarUrl = "",
+                    ChatId = createdChat.ChatId,
+                    ChatType = createdChat.ChatType,
+                    CreatedAt = createdChat.CreatedAt,
+                    GroupName = firstUser.UserId + " " + secondUser.UserId,
+                    ChatMembers = new List<ChatMemberDto>
                         {
                             new ChatMemberDto
                             {
@@ -190,10 +192,29 @@ namespace Messenger.API.Hubs
                                     UserId = firstUser.UserId,
                                     Username = firstUser.Username,
                                 }
+                            },
+                            new ChatMemberDto
+                            {
+                                JoinedAt = secondChatMember.JoinedAt,
+                                Role = secondChatMember.Role,
+                                User = new UserDto
+                                {
+                                    AvatarUrl = secondUser.AvatarUrl,
+                                    CreatedAt = secondUser.CreatedAt,
+                                    Email = secondUser.Email,
+                                    FirstName = secondUser.FirstName,
+                                    LastName = secondUser.LastName,
+                                    LastSeen = secondUser.LastSeen,
+                                    PasswordHash = secondUser.PasswordHash,
+                                    UserId = secondUser.UserId,
+                                    Username = secondUser.Username,
+                                }
                             }
                         }
-                    };
-                    await Clients.Caller.SendAsync("createPrivateChat", response);
+                };
+                await Clients.Caller.SendAsync("createAndSetPrivateChat", response);
+                if (_connectionsMap.TryGetValue(secondUserId, out var secondUserConnectionId))
+                {
                     await Clients.Client(secondUserConnectionId).SendAsync("createPrivateChat", response);
                 }
             }

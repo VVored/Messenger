@@ -24,6 +24,7 @@ const ChatPage = () => {
     }
 
     const JoinGroup = async (chatId) => {
+        console.log(connection, chatId);
         connection.invoke('JoinGroup', chatId + '');
     }
 
@@ -48,7 +49,7 @@ const ChatPage = () => {
     }
 
     const openChatMessages = (chat) => {
-        if (selectedChat) {
+        if (selectedChat !== null) {
             LeaveGroup(selectedChat.chatId);
         }
         JoinGroup(chat.chatId);
@@ -57,23 +58,35 @@ const ChatPage = () => {
     }
 
     useEffect(() => {
+        StartConnection();
         getUserChats().then((result) => {
             setChats(result.data);
         });
-        StartConnection();
     }, [])
+
+    useEffect(() => {
+        if (connection) {
+            connection.on('createAndSetPrivateChat', async (response) => {
+                setChats(prev => [...prev, response]);
+                openChatMessages(response);
+            });
+            connection.on('createPrivateChat', async (response) => {
+                setChats(prev => [...prev, response]);
+            });
+        }
+    }, [connection])
 
     return (
         <div style={{ display: "flex", height: '100vh', overflowY: 'hidden' }}>
-            <ChatList chats={chats} openCreateChat={openCreateChat} openChatMessages={openChatMessages} />
+            <ChatList chats={chats} openCreateChat={openCreateChat} openChatMessages={openChatMessages} setSelectedUser={setSelectedUser} />
             <div style={{ width: '100%', backgroundColor: "rgba(178, 178, 178, 0.5)" }}>
                 {
-                    createChatIsOpen ? <CreateChat setChats={setChats} setSelectedChat={setSelectedChat} setCreateChatIsOpen={setCreateChatIsOpen} /> : selectedChat ? <ChatMessages connection={connection} setSelectedUser={setSelectedUser} setConnection={setConnection} setChats={setChats} chat={selectedChat}></ChatMessages> : <h1 style={{ textAlign: "center" }}>Select a chat</h1>
+                    createChatIsOpen ? <CreateChat setChats={setChats} setSelectedChat={setSelectedChat} setCreateChatIsOpen={setCreateChatIsOpen} /> : selectedChat ? <ChatMessages connection={connection} setSelectedUser={setSelectedUser} setChats={setChats} chat={selectedChat} openChatMessages={openChatMessages}></ChatMessages> : <h1 style={{ textAlign: "center" }}>Выберите чат</h1>
                 }
             </div>
             {
                 selectedUser
-                    ? <Profile selectedUser={selectedUser} setSelectedUser={setSelectedUser}></Profile>
+                    ? <Profile selectedUser={selectedUser} setSelectedUser={setSelectedUser} connection={connection} chats={chats} openChatMessages={openChatMessages}></Profile>
                     : <div>
 
                     </div>

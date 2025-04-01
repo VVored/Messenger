@@ -13,7 +13,7 @@ const RegisterPage = () => {
 
     const registerUser = async () => {
         if (!username || !password || !email || !firstName || !lastName) {
-            setError('Please fill in all fields');
+            setError('Заполните все поля');
             return;
         }
         try {
@@ -26,18 +26,18 @@ const RegisterPage = () => {
                 navigate('/login'); 
             }
         } catch (err) {
-            setError(err);
+            setError('Ошибка');
         }
     }    
 
     return (
         <div className={style.container}>
-            <input className={style.input} type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
-            <input className={style.input} type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-            <input className={style.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-            <input className={style.input} type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" />
-            <input className={style.input} type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" />
-            <button className={style.button} onClick={registerUser}>Register user</button>
+            <input className={style.input} type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Имя пользователя" />
+            <input className={style.input} type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Электронная почта" />
+            <input className={style.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Пароль" />
+            <input className={style.input} type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Имя" />
+            <input className={style.input} type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Фамилия" />
+            <button className={style.button} onClick={registerUser}>Зарегистрировать аккаунт</button>
             {error ?? <p className={style.error}>{error}</p>}
         </div>
     );

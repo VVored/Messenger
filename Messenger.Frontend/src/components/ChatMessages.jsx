@@ -7,7 +7,7 @@ import leaveChatImg from '../imgs/leave_chat.png';
 import FileAttachment from './FileAttachment';
 import { jwtDecode } from 'jwt-decode';
 
-const ChatMessages = ({ connection, setSelectedUser, setConnection, chat, setChats }) => {
+const ChatMessages = ({ connection, setSelectedUser, chat, setChats, openChatMessages }) => {
 
     const [messages, setMessages] = useState([]);
     const messagesEndRef = useRef(null);
@@ -43,22 +43,20 @@ const ChatMessages = ({ connection, setSelectedUser, setConnection, chat, setCha
     }
 
     const ConfigureConnection = async () => {
+        connection.off('leaveChatMember');
+        connection.off('userJoinChat');
+        connection.off('newMessage');
         connection.on('newMessage', message => {
-            if (message.chatId === chat.chatId) {
-                setMessages(prev => [...prev, message]);
-            }
+            setMessages(prev => [...prev, message]);
         });
         connection.on('userJoinChat', response => {
-            console.log('userJoinedChat');
             setChats(prev => [...prev, chat]);
             setIsJoined(true);
         });
         connection.on('leaveChatMember', response => {
-            console.log('leaveChatMember');
             setChats(prev => prev.filter(item => item !== chat));
             setIsJoined(false);
         })
-        setConnection(connection);
     }
 
     const sendMessage = async (e, chatId, content) => {
@@ -66,7 +64,6 @@ const ChatMessages = ({ connection, setSelectedUser, setConnection, chat, setCha
             if (content !== '' || files.length > 0) {
                 const token = localStorage.getItem('token');
                 const attachments = await uploadFiles(files);
-                console.log(JSON.stringify({ chatId, content, attachments }));
                 await fetch('https://localhost:7192/api/messages', {
                     method: 'POST',
                     body: JSON.stringify({ chatId, content, attachments }),
@@ -107,21 +104,22 @@ const ChatMessages = ({ connection, setSelectedUser, setConnection, chat, setCha
     }
 
     useEffect(() => {
-        setPrivateChatAvatarUrl('');
-        setPrivateChatName('');
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-        chat.chatMembers.forEach(chatMember => {
-            if (chatMember.user.userId + '' !== decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]) {
-                setPrivateChatAvatarUrl(chatMember.user.avatarUrl);
-                setPrivateChatName(chatMember.user.username);
-            }
-        });
-
-        IsUserJoined();
+        ConfigureConnection();
         setIsJoined(IsUserJoined());
         getChatMessages(chat.chatId).then(response => { setMessages(response.data) });
-        ConfigureConnection();
+        if (chat.chatType === 'private') {
+            setPrivateChatAvatarUrl('');
+            setPrivateChatName('');
+            const token = localStorage.getItem('token');
+            const decoded = jwtDecode(token);
+            chat.chatMembers.forEach(chatMember => {
+                if (chatMember.user.userId + '' !== decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]) {
+                    setPrivateChatAvatarUrl(chatMember.user.avatarUrl);
+                    setPrivateChatName(chatMember.user.username);
+                }
+            });
+        }
+        console.log(chat);
     }, [chat]);
 
     useEffect(scrollToBottom, [messages]);
@@ -183,7 +181,7 @@ const ChatMessages = ({ connection, setSelectedUser, setConnection, chat, setCha
                                 <label htmlFor="file" className={styles.file_label}></label>
                                 <input accept='image/png, image/gif, image/jpeg' type="file" id="file" className={styles.file_input} multiple onChange={e => { setFiles(e.target.files); }} />
                             </div>
-                            <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => sendMessage(e, chat.chatId, currentMessage)} placeholder="Напишите сообщение..." />
+                            <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => { sendMessage(e, chat.chatId, currentMessage); }} placeholder="Напишите сообщение..." />
                         </div>
                         : <button className={styles.button} onClick={() => { JoinChat() }}>Join chat</button>}
             </div>

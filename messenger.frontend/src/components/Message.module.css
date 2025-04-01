@@ -1,19 +1,31 @@
 .message {
-    background-color: white;
-    padding: 5px;
-    border-radius: 10px;
-    width: fit-content;
-    max-width: 80%;
-    text-align: justify;
-    margin: 10px 10px 0px 10px;
+  background-color: white;
+  padding: 5px;
+  border-radius: 10px;
+  width: fit-content;
+  max-width: 80%;
+  text-align: justify;
+  margin: 10px 10px 0px 10px;
+}
+
+/* .my_message {
+  background-color: rgb(238, 238, 238);
+} */
+
+.user_avatar {  
+  height: 30px;
+  margin-top: auto;
+  cursor: pointer;
+  border-radius: 50%;
+  margin-left: 5px;
 }
 
 .username {
-    margin: 0;
-    font-size: 12px;
-    cursor: pointer;
+  margin: 0;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 .sentAt {
-    font-size: 10px;
+  font-size: 10px;
 }
