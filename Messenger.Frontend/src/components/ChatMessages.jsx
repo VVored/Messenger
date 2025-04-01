@@ -79,6 +79,21 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats, openChatMes
         }
     }
 
+    const onPasteImage = (e) => {
+        if (e.clipboardData) {
+            var items = e.clipboardData.items;
+            if (items) {
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        var file = items[i].getAsFile();
+
+                        setFiles(prev => [...prev, file]);
+                    }
+                }
+            }
+        }
+    }
+
     const uploadFiles = async (files) => {
         let attachments = [];
         for (let i = 0; i < files.length; i++) {
@@ -181,7 +196,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats, openChatMes
                                 <label htmlFor="file" className={styles.file_label}></label>
                                 <input accept='image/png, image/gif, image/jpeg' type="file" id="file" className={styles.file_input} multiple onChange={e => { setFiles(e.target.files); }} />
                             </div>
-                            <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => { sendMessage(e, chat.chatId, currentMessage); }} placeholder="Напишите сообщение..." />
+                            <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => { sendMessage(e, chat.chatId, currentMessage); }} placeholder="Напишите сообщение..." onPaste={(e) => { onPasteImage(e); }} />
                         </div>
                         : <button className={styles.button} onClick={() => { JoinChat() }}>Join chat</button>}
             </div>
