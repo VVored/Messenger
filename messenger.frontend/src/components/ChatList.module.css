@@ -21,8 +21,6 @@
     color: white;
     cursor: pointer;
     font-size: 14px;
-    display: block;
-    margin: 10px auto;
-    text-align: justify;
-    padding-left: 10px;
+    padding: 8px;
+    margin: auto 22%;
 }

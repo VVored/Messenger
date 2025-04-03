@@ -7,7 +7,6 @@ import { HubConnectionBuilder } from "@microsoft/signalr";
 import Profile from './Profile';
 
 
-
 const ChatPage = () => {
     const [chats, setChats] = useState([]);
     const [createChatIsOpen, setCreateChatIsOpen] = useState(false);
@@ -43,7 +42,9 @@ const ChatPage = () => {
     }
 
     const openCreateChat = () => {
-        LeaveGroup(selectedChat.chatId);
+        if (selectedChat) {
+            LeaveGroup(selectedChat.chatId);
+        }
         setSelectedChat(null);
         setCreateChatIsOpen(true);
     }
@@ -81,15 +82,13 @@ const ChatPage = () => {
             <ChatList chats={chats} openCreateChat={openCreateChat} openChatMessages={openChatMessages} setSelectedUser={setSelectedUser} />
             <div style={{ width: '100%', backgroundColor: "rgba(178, 178, 178, 0.5)" }}>
                 {
-                    createChatIsOpen ? <CreateChat setChats={setChats} setSelectedChat={setSelectedChat} setCreateChatIsOpen={setCreateChatIsOpen} /> : selectedChat ? <ChatMessages connection={connection} setSelectedUser={setSelectedUser} setChats={setChats} chat={selectedChat} openChatMessages={openChatMessages}></ChatMessages> : <h1 style={{ textAlign: "center" }}>Выберите чат</h1>
+                    createChatIsOpen ? <CreateChat setChats={setChats} setSelectedChat={setSelectedChat} setCreateChatIsOpen={setCreateChatIsOpen} /> : selectedChat ? <ChatMessages connection={connection} setSelectedUser={setSelectedUser} setChats={setChats} chat={selectedChat}></ChatMessages> : <h1 style={{ textAlign: "center" }}>Выберите чат</h1>
                 }
             </div>
             {
                 selectedUser
                     ? <Profile selectedUser={selectedUser} setSelectedUser={setSelectedUser} connection={connection} chats={chats} openChatMessages={openChatMessages}></Profile>
-                    : <div>
-
-                    </div>
+                    : <div></div>
             }
         </div>
     )

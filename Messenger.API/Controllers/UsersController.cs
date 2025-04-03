@@ -4,6 +4,7 @@ using Messenger.API.Models;
 using Messenger.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Messenger.API.Controllers
 {
@@ -80,11 +81,36 @@ namespace Messenger.API.Controllers
                 PasswordHash = hashedPassword,
                 FirstName = registerRequest.FirstName,
                 LastName = registerRequest.LastName,
-                AvatarUrl = string.Empty
+                AvatarUrl = registerRequest.AvatarUrl
             };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
             return Ok(user);
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditUser([FromBody] UserForEditDto userForEditDto)
+        {
+            var user = await _context.Users.Where(u => u.UserId == userForEditDto.Id).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            if (_context.Users.Any(u => u.Username == userForEditDto.Username) && user.Username != userForEditDto.Username)
+            {
+                return BadRequest("Username is already taken");
+            }
+            user.Username = userForEditDto.Username;
+            user.Email = userForEditDto.Email;
+            user.LastName = userForEditDto.LastName;
+            user.FirstName = userForEditDto.FirstName;
+            if (!userForEditDto.Password.IsNullOrEmpty())
+            {
+                user.PasswordHash = _passwordHasher.HashPassword(userForEditDto.Password);
+            }
+            user.AvatarUrl = userForEditDto.AvatarUrl;
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
         public class RegisterRequest
         {
@@ -93,6 +119,7 @@ namespace Messenger.API.Controllers
             public string Password { get; set; }
             public string FirstName { get; set; }
             public string LastName { get; set; }
+            public string AvatarUrl { get; set; }
         }
     }
 }
