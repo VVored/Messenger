@@ -41,7 +41,6 @@ const Profile = ({ selectedUser, setSelectedUser, connection, chats, openChatMes
                     : <button onClick={() => { const privateChat = getPrivateChat(); if (privateChat) { openChatMessages(privateChat) } else { createPrivateChat() } }} style={{ backgroundColor: 'rgba(178, 178, 178)', border: 'none', width: '100%', cursor: 'pointer', fontWeight: '700', color: 'white', padding: '2%' }}>Отправить сообщение</button>
             }
             <p>Имя пользователя: <b>@{`${selectedUser.username}`}</b></p>
-            <p>{selectedUser.userId}</p>
         </div>
     )
 }

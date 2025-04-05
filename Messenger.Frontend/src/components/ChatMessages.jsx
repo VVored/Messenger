@@ -6,17 +6,20 @@ import styleChat from './Chat.module.css';
 import leaveChatImg from '../imgs/leave_chat.png';
 import FileAttachment from './FileAttachment';
 import { jwtDecode } from 'jwt-decode';
+import EmojiList from './EmojiList';
 
-const ChatMessages = ({ connection, setSelectedUser, chat, setChats, openChatMessages }) => {
+const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
 
     const [messages, setMessages] = useState([]);
     const messagesEndRef = useRef(null);
+    const currentMessageInput = useRef(null);
     const [currentMessage, setCurrentMessage] = useState('');
     const [isJoined, setIsJoined] = useState(false);
     const [amountOfVh, setAmountOfVh] = useState(85);
     const [files, setFiles] = useState([]);
     const [privateChatAvatarUrl, setPrivateChatAvatarUrl] = useState('');
     const [privateChatName, setPrivateChatName] = useState('');
+    const [isEmojiListOpen, setIsEmojiListOpen] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current.scrollIntoView({ behaivor: 'smooth' });
@@ -74,7 +77,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats, openChatMes
                 });
                 setFiles([]);
                 setCurrentMessage('');
-                e.target.value = '';
+                currentMessageInput.current.value = '';
             }
         }
     }
@@ -86,7 +89,6 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats, openChatMes
                 for (let i = 0; i < items.length; i++) {
                     if (items[i].type.indexOf('image') !== -1) {
                         var file = items[i].getAsFile();
-
                         setFiles(prev => [...prev, file]);
                     }
                 }
@@ -134,7 +136,6 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats, openChatMes
                 }
             });
         }
-        console.log(chat);
     }, [chat]);
 
     useEffect(scrollToBottom, [messages]);
@@ -188,6 +189,9 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats, openChatMes
 
                     </div>
             }
+            {
+                isEmojiListOpen ? <EmojiList setCurrentMessage={setCurrentMessage} currentMessage={currentMessage} currentMessageInput={currentMessageInput}></EmojiList> : <div></div>
+            }
             <div style={{ height: '5vh', background: 'white', margin: 'auto', borderColor: 'rgba(178, 178, 178, 0.5)', borderWidth: '1px' }}>
                 {
                     isJoined
@@ -196,7 +200,8 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats, openChatMes
                                 <label htmlFor="file" className={styles.file_label}></label>
                                 <input accept='image/png, image/gif, image/jpeg' type="file" id="file" className={styles.file_input} multiple onChange={e => { setFiles(e.target.files); }} />
                             </div>
-                            <input className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => { sendMessage(e, chat.chatId, currentMessage); }} placeholder="Напишите сообщение..." onPaste={(e) => { onPasteImage(e); }} />
+                            <input ref={currentMessageInput} className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => { sendMessage(e, chat.chatId, currentMessage); }} placeholder="Напишите сообщение..." onPaste={(e) => { onPasteImage(e); }} />
+                            <button style={{ height: '111%', width: '10%' }} className={styles.button} onClick={() => {setIsEmojiListOpen(!isEmojiListOpen)}}>☺︎</button>
                         </div>
                         : <button className={styles.button} onClick={() => { JoinChat() }}>Join chat</button>}
             </div>

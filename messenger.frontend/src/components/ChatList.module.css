@@ -1,26 +1,26 @@
 .input {
-    border: 1px solid #cccccc;
-    background: #ffffff !important;
-    outline: none;
-    border-radius: 15px;
-    height: 5%;
-    color: black;
-    font-size: 14px;
-    display: block;
-    margin: 10px auto;
-    text-align: justify;
-    padding-left: 10px;
+  border: 1px solid #cccccc;
+  background: #ffffff !important;
+  outline: none;
+  border-radius: 15px;
+  height: 5%;
+  color: black;
+  font-size: 14px;
+  display: block;
+  margin: 10px auto;
+  text-align: justify;
+  padding-left: 10px;
 }
 
 .button {
-    border: 1px solid #cccccc;
-    background: rgb(178, 178, 178) !important;
-    outline: none;
-    border-radius: 15px;
-    height: 5%;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-    padding: 8px;
-    margin: auto 22%;
+  border: 1px solid #cccccc;
+  background: rgb(178, 178, 178) !important;
+  outline: none;
+  border-radius: 15px;
+  height: 5%;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px;
+  margin: auto 22%;
 }
