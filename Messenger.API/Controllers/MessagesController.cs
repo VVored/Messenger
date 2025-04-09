@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Security.Claims;
 
@@ -39,6 +40,8 @@ namespace Messenger.API.Controllers
                 .Where(m => m.ChatId == chatId)
                 .Include(m => m.Chat)
                 .Include(m => m.Attachments)
+                .Include(m => m.RepliableMessage)
+                .Include(m => m.RepliableMessage.Sender)
                 .Include(m => m.Sender)
                 .OrderBy(m => m.SentAt)
                 .Select(m => new MessageDto
@@ -64,7 +67,25 @@ namespace Messenger.API.Controllers
                         LastSeen = m.Sender.LastSeen,
                         PasswordHash = m.Sender.PasswordHash
                     },
-                    Attachments = m.Attachments.Select(a => new AttachmentDto { MessageId = a.MessageId, AttachmentId = a.AttachmentId, FileSize = a.FileSize, FileType = a.FileType, FileUrl = a.FileUrl}).ToList(),
+                    Attachments = m.Attachments.Select(a => new AttachmentDto { MessageId = a.MessageId, AttachmentId = a.AttachmentId, FileSize = a.FileSize, FileType = a.FileType, FileUrl = a.FileUrl }).ToList(),
+                    RepliableMessage = m.RepliableMessage != null ? new RepliableMessageDto 
+                    {
+                        Content = m.RepliableMessage.Content.IsNullOrEmpty() ? m.RepliableMessage.Attachments.Count.ToString() + " вложений" : m.RepliableMessage.Content,
+                        MessageId = m.RepliableMessage.MessageId,
+                        Sender = new UserDto 
+                        {
+                            UserId = m.RepliableMessage.Sender.UserId,
+                            AvatarUrl = m.RepliableMessage.Sender.AvatarUrl,
+                            CreatedAt = m.RepliableMessage.Sender.CreatedAt,
+                            Email = m.RepliableMessage.Sender.Email, 
+                            FirstName = m.RepliableMessage.Sender.FirstName,
+                            LastName = m.RepliableMessage.Sender.LastName,
+                            LastSeen = m.RepliableMessage.Sender.LastSeen,
+                            PasswordHash = m.RepliableMessage.Sender.PasswordHash,
+                            Username = m.RepliableMessage.Sender.Username,
+                        },
+                        SenderId = m.RepliableMessage.Sender.UserId
+                    } : null,
                     Content = m.Content,
                     SentAt = m.SentAt,
                     IsDeleted = m.IsDeleted,
@@ -78,7 +99,7 @@ namespace Messenger.API.Controllers
         [HttpGet("{messageId}", Name = "GetMessage")]
         public async Task<ActionResult<MessageDto>> GetMessage(int messageId)
         {
-            var message = await _context.Messages.Where(m => m.MessageId == messageId).Include(m => m.Sender).Include(m => m.Chat).Include(m => m.Chat.GroupChatInfo).FirstOrDefaultAsync();
+            var message = await _context.Messages.Where(m => m.MessageId == messageId).Include(m => m.Sender).Include(m => m.Chat).Include(m => m.Chat.GroupChatInfo).Include(m => m.RepliableMessage).FirstOrDefaultAsync();
 
             if (message == null)
             {
@@ -112,6 +133,24 @@ namespace Messenger.API.Controllers
                     PasswordHash = message.Sender.PasswordHash
                 },
                 Attachments = message.Attachments.Select(a => new AttachmentDto { MessageId = a.MessageId, FileUrl = a.FileUrl, FileType = a.FileType, AttachmentId = a.AttachmentId, FileSize = a.FileSize }).ToList(),
+                RepliableMessage = message.RepliableMessage != null ? new RepliableMessageDto
+                {
+                    Content = message.RepliableMessage.Content.IsNullOrEmpty() ? message.RepliableMessage.Attachments.Count.ToString() + " вложений" : message.RepliableMessage.Content,
+                    MessageId = message.RepliableMessage.MessageId,
+                    Sender = new UserDto
+                    {
+                        UserId = message.RepliableMessage.Sender.UserId,
+                        AvatarUrl = message.RepliableMessage.Sender.AvatarUrl,
+                        CreatedAt = message.RepliableMessage.Sender.CreatedAt,
+                        Email = message.RepliableMessage.Sender.Email,
+                        FirstName = message.RepliableMessage.Sender.FirstName,
+                        LastName = message.RepliableMessage.Sender.LastName,
+                        LastSeen = message.RepliableMessage.Sender.LastSeen,
+                        PasswordHash = message.RepliableMessage.Sender.PasswordHash,
+                        Username = message.RepliableMessage.Sender.Username,
+                    },
+                    SenderId = message.RepliableMessage.Sender.UserId
+                } : null,
                 Content = message.Content,
                 SentAt = message.SentAt,
                 IsDeleted = message.IsDeleted,
@@ -131,11 +170,14 @@ namespace Messenger.API.Controllers
                 return NotFound();
             }
 
+            var repliableMessage = await _context.Messages.Include(m => m.Sender).Include(m => m.Attachments).Where(m => m.MessageId == messageForCreationDto.RepliableMessageId).FirstOrDefaultAsync();
+
             var message = new Message
             {
                 Chat = chat,
                 Content = messageForCreationDto.Content,
-                Sender = user
+                Sender = user,
+                RepliableMessageId = repliableMessage?.MessageId,
             };
 
             await _context.Messages.AddAsync(message);
@@ -173,6 +215,24 @@ namespace Messenger.API.Controllers
                     PasswordHash = user.PasswordHash
                 },
                 Attachments = attachments.Select(a => new AttachmentDto { MessageId = a.MessageId, AttachmentId = a.AttachmentId, FileSize = a.FileSize, FileType = a.FileType, FileUrl = a.FileUrl }).ToList(),
+                RepliableMessage = repliableMessage != null ? new RepliableMessageDto
+                {
+                    Content = repliableMessage.Content.IsNullOrEmpty() ? repliableMessage.Attachments.Count.ToString() + " вложений" : repliableMessage.Content,
+                    MessageId = repliableMessage.MessageId,
+                    Sender = new UserDto
+                    {
+                        UserId = repliableMessage.Sender.UserId,
+                        AvatarUrl = repliableMessage.Sender.AvatarUrl,
+                        CreatedAt = repliableMessage.Sender.CreatedAt,
+                        Email = repliableMessage.Sender.Email,
+                        FirstName = repliableMessage.Sender.FirstName,
+                        LastName = repliableMessage.Sender.LastName,
+                        LastSeen = repliableMessage.Sender.LastSeen,
+                        PasswordHash = repliableMessage.Sender.PasswordHash,
+                        Username = repliableMessage.Sender.Username,
+                    },
+                    SenderId = repliableMessage.Sender.UserId
+                } : null,
                 Content = message.Content,
                 SentAt = message.SentAt,
                 IsDeleted = message.IsDeleted,

@@ -13,6 +13,7 @@ namespace Messenger.API.DTOs
         public UserDto Sender { get; set; }
         public string Content { get; set; }
         public List<AttachmentDto> Attachments { get; set; } = new List<AttachmentDto>();
+        public RepliableMessageDto? RepliableMessage { get; set; }
 
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
 

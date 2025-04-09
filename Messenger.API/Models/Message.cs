@@ -17,6 +17,9 @@ namespace Messenger.API.Models
         public int SenderId { get; set; }
         public User Sender { get; set; }
         public ICollection<Attachment> Attachments { get; set; }
+        [ForeignKey("Reply")]
+        public int? RepliableMessageId { get; set; }
+        public Message? RepliableMessage { get; set; }
 
         [Required]
         public string Content { get; set; }

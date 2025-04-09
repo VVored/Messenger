@@ -1,23 +1,22 @@
 import React from 'react';
 import styles from './Message.module.css'
 
-const Message = ({ message, setSelectedUser }) => {
+const Message = ({ message, setSelectedUser, setRepliableMessage }) => {
 
     // const [isMessageMine, setIsMessageMine] = useState(false);
 
-    // useEffect(() => {
-    //     const token = localStorage.getItem('token');
-    //     const decoded = jwtDecode(token);
-    //     setIsMessageMine(false);
-    //     if (decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] === message.sender.userId + '') {
-    //         setIsMessageMine(true);
-    //     }
-    // }, [])
-
     return (
-        <div style={{ display: 'flex' }}>
-            <img onClick={() => { setSelectedUser(message.sender);}} className={styles.user_avatar} src={`https://localhost:7192/api/files/${message.sender.avatarUrl}`} alt='avatar'/>
+        <div style={{ display: 'flex' }} onDoubleClick={() => {setRepliableMessage(message)}}>
+            <img onClick={() => { setSelectedUser(message.sender); }} className={styles.user_avatar} src={`https://localhost:7192/api/files/${message.sender.avatarUrl}`} alt='avatar' />
             <div className={styles.message}>
+                {
+                    message.repliableMessage
+                        ? <div style={{ padding: '3px', borderRadius: '5px', borderLeft: '3px solid #b8b8b8', backgroundColor: '#dedede' }}>
+                            <p style={{ margin: '3px 1px' }} className={styles.sentAt}>{message.repliableMessage.sender.firstName} {message.repliableMessage.sender.lastName}</p>
+                            <p style={{ margin: '3px 1px' }} className={styles.sentAt}>{message.repliableMessage.content}</p>
+                        </div>
+                        : <div></div>
+                }
                 <h3 className={styles.username} onClick={() => { setSelectedUser(message.sender); }}>{message.sender.firstName} {message.sender.lastName}</h3>
                 <p style={{ margin: '3px 1px' }}>{message.content}</p>
                 {

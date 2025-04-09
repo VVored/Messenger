@@ -23,7 +23,6 @@ const ChatPage = () => {
     }
 
     const JoinGroup = async (chatId) => {
-        console.log(connection, chatId);
         connection.invoke('JoinGroup', chatId + '');
     }
 

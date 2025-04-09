@@ -20,6 +20,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
     const [privateChatAvatarUrl, setPrivateChatAvatarUrl] = useState('');
     const [privateChatName, setPrivateChatName] = useState('');
     const [isEmojiListOpen, setIsEmojiListOpen] = useState(false);
+    const [repliableMessage, setRepliableMessage] = useState(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current.scrollIntoView({ behaivor: 'smooth' });
@@ -62,14 +63,14 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
         })
     }
 
-    const sendMessage = async (e, chatId, content) => {
+    const sendMessage = async (e, chatId, content, repliableMessageId) => {
         if (e.key === 'Enter') {
             if (content !== '' || files.length > 0) {
                 const token = localStorage.getItem('token');
                 const attachments = await uploadFiles(files);
-                await fetch('https://localhost:7192/api/messages', {
+                const response = await fetch('https://localhost:7192/api/messages', {
                     method: 'POST',
-                    body: JSON.stringify({ chatId, content, attachments }),
+                    body: JSON.stringify({ chatId, content, attachments, repliableMessageId }),
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -77,6 +78,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
                 });
                 setFiles([]);
                 setCurrentMessage('');
+                setRepliableMessage(null);
                 currentMessageInput.current.value = '';
             }
         }
@@ -141,9 +143,19 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
     useEffect(scrollToBottom, [messages]);
 
     useEffect(() => {
-        files.length > 0 ? setAmountOfVh(70) : setAmountOfVh(85);
-        scrollToBottom();
-    }, [files]);
+        if (files.length > 0 && repliableMessage) {
+            setAmountOfVh(60);
+        }
+        else if (files.length > 0) {
+            setAmountOfVh(70);
+        }
+        else if (repliableMessage) {
+            setAmountOfVh(75);
+        }
+        else {
+            setAmountOfVh(85);
+        }
+    }, [files, repliableMessage]);
 
     return (
         <div style={{ minHeight: '100vh' }}>
@@ -171,11 +183,22 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
             <div style={{ height: amountOfVh + 'vh', overflowY: 'auto' }}>
                 {
                     messages.map(message => {
-                        return <Message key={message.messageId} message={message} setSelectedUser={setSelectedUser} />
+                        return <Message key={message.messageId} message={message} setSelectedUser={setSelectedUser} setRepliableMessage={setRepliableMessage} />
                     })
                 }
                 <div ref={messagesEndRef} />
             </div>
+            {
+                repliableMessage !== null
+                    ? <div style={{ display: 'flex', height: '10vh', backgroundColor: 'white' }}>
+                        <div style={{margin: 'auto 0'}}>
+                            <p style={{ margin: '3px 1px', fontSize: '15px' }}>{repliableMessage.sender.firstName} {repliableMessage.sender.lastName}</p>
+                            <p style={{ margin: '3px 1px', fontSize: '15px' }}>{repliableMessage.content ? repliableMessage.content : repliableMessage.attachments.length + ' вложений'}</p>
+                        </div>
+                        <button onClick={() => { setRepliableMessage(null); }} style={{background: 'none', border: 'none', marginLeft: 'auto', width: '9%', cursor: 'pointer', fontSize: '30px' }}>×</button>
+                    </div>
+                    : <div></div>
+            }
             {
                 files.length > 0
                     ? <div style={{ display: 'flex', height: '15vh', backgroundColor: 'white' }}>
@@ -200,8 +223,8 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
                                 <label htmlFor="file" className={styles.file_label}></label>
                                 <input accept='image/png, image/gif, image/jpeg' type="file" id="file" className={styles.file_input} multiple onChange={e => { setFiles(e.target.files); }} />
                             </div>
-                            <input ref={currentMessageInput} className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => { sendMessage(e, chat.chatId, currentMessage); }} placeholder="Напишите сообщение..." onPaste={(e) => { onPasteImage(e); }} />
-                            <button style={{ height: '111%', width: '10%' }} className={styles.button} onClick={() => {setIsEmojiListOpen(!isEmojiListOpen)}}>☺︎</button>
+                            <input ref={currentMessageInput} className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => { sendMessage(e, chat.chatId, currentMessage, repliableMessage?.messageId); }} placeholder="Напишите сообщение..." onPaste={(e) => { onPasteImage(e); }} />
+                            <button style={{ height: '111%', width: '10%' }} className={styles.button} onClick={() => { setIsEmojiListOpen(!isEmojiListOpen) }}>☺︎</button>
                         </div>
                         : <button className={styles.button} onClick={() => { JoinChat() }}>Join chat</button>}
             </div>
