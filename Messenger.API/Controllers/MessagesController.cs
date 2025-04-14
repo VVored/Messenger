@@ -239,6 +239,27 @@ namespace Messenger.API.Controllers
                 IsEdited = message.IsEdited,
             };
 
+            var notificationResponse = new LastMessageDto
+            {
+                Content = message.Content.IsNullOrEmpty() ? attachments.Count() + " вложений" : message.Content,
+                MessageId = message.MessageId,
+                Sender = new UserDto
+                {
+                    UserId = message.SenderId,
+                    Username = user.Username,
+                    CreatedAt = user.CreatedAt,
+                    AvatarUrl = user.AvatarUrl,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    LastSeen = user.LastSeen,
+                    PasswordHash = user.PasswordHash
+                },
+                SenderId = message.SenderId,
+                ChatId = message.ChatId,
+            };
+
+            await _hubContext.Clients.Group(messageForCreationDto.ChatId + "Notification").SendAsync("notification", notificationResponse);
             await _hubContext.Clients.Group(messageForCreationDto.ChatId.ToString()).SendAsync("newMessage", response);
 
             return CreatedAtRoute(routeName: "GetMessage", routeValues: new { message.MessageId }, value: response);

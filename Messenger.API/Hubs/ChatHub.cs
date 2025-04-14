@@ -21,6 +21,17 @@ namespace Messenger.API.Hubs
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
+        public async Task SendNotificationSound(string groupName)
+        {
+            await Clients.OthersInGroup(groupName).SendAsync("notificationSound");
+        }
+
+        public async Task JoinBasicGroups()
+        {
+            await _context.ChatMembers.Where(cm => cm.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).ForEachAsync(async cm => { await Groups.RemoveFromGroupAsync(Context.ConnectionId, cm.ChatId + "Notification"); Console.WriteLine(cm.ChatId); });
+            await _context.ChatMembers.Where(cm => cm.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).ForEachAsync(async cm => { await Groups.AddToGroupAsync(Context.ConnectionId, cm.ChatId + "Notification"); Console.WriteLine(cm.ChatId); });
+        }
+
         public async Task JoinGroup(string chatId)
         {
             /*            var user = await _context.Users.Where(u => u.UserId == int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value)).FirstOrDefaultAsync();
@@ -115,6 +126,7 @@ namespace Messenger.API.Hubs
                     Username = user.Username
                 };
 
+                await Groups.AddToGroupAsync(Context.ConnectionId, chatId + "Notification");
                 await Clients.Client(Context.ConnectionId).SendAsync("userJoinChat", response);
             }
         }
@@ -142,6 +154,7 @@ namespace Messenger.API.Hubs
                 _context.ChatMembers.Remove(member);
                 await _context.SaveChangesAsync();
 
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId + "Notification");
                 await Clients.Client(Context.ConnectionId).SendAsync("leaveChatMember", response);
             }
         }
@@ -213,8 +226,10 @@ namespace Messenger.API.Hubs
                         }
                 };
                 await Clients.Caller.SendAsync("createAndSetPrivateChat", response);
+                await Groups.AddToGroupAsync(Context.ConnectionId, response.ChatId + "Notification");
                 if (_connectionsMap.TryGetValue(secondUserId, out var secondUserConnectionId))
                 {
+                    await Groups.AddToGroupAsync(secondUserConnectionId, response.ChatId + "Notification");
                     await Clients.Client(secondUserConnectionId).SendAsync("createPrivateChat", response);
                 }
             }

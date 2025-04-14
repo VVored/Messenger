@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 
 namespace Messenger.API.Controllers
@@ -40,6 +41,7 @@ namespace Messenger.API.Controllers
                 .ToListAsync();
             foreach (var i in chats)
             {
+                var lastMessage = await _context.Messages.Include(c => c.Attachments).Include(c => c.Sender).Where(c => c.ChatId == i.ChatId).OrderBy(c => c.SentAt).LastOrDefaultAsync();
                 var chatMembers = await _context.ChatMembers
                     .Include(cm => cm.User)
                     .Where(cm => cm.ChatId == i.ChatId)
@@ -62,6 +64,25 @@ namespace Messenger.API.Controllers
                     }
                     ).ToListAsync();
                 i.ChatMembers = chatMembers;
+                i.LastMessage = lastMessage != null ? new LastMessageDto
+                {
+                    Content = lastMessage.Content.IsNullOrEmpty() ? lastMessage.Attachments.Count + " вложений" : lastMessage.Content,
+                    MessageId = lastMessage.MessageId,
+                    SenderId = lastMessage.SenderId,
+                    Sender = new UserDto
+                    {
+                        AvatarUrl = lastMessage.Sender.AvatarUrl,
+                        CreatedAt = lastMessage.Sender.CreatedAt,
+                        Email = lastMessage.Sender.Email,
+                        FirstName = lastMessage.Sender.FirstName,
+                        LastName = lastMessage.Sender.LastName,
+                        LastSeen = lastMessage.Sender.LastSeen,
+                        PasswordHash = lastMessage.Sender.PasswordHash,
+                        UserId = lastMessage.Sender.UserId,
+                        Username = lastMessage.Sender.Username
+                    },
+                    ChatId = lastMessage.ChatId
+                } : null;
             }
             return Ok(chats);
         }
@@ -77,6 +98,7 @@ namespace Messenger.API.Controllers
             var chats = await query.Select(cm => new ChatDto { ChatId = cm.ChatId, ChatType = cm.Chat.ChatType, CreatedAt = cm.Chat.CreatedAt, AvatarUrl = cm.Chat.GroupChatInfo.AvatarUrl, Description = cm.Chat.GroupChatInfo.Description, GroupName = cm.Chat.GroupChatInfo.GroupName }).ToListAsync();
             foreach (var i in chats)
             {
+                var lastMessage = await _context.Messages.Include(c => c.Attachments).Include(c => c.Sender).Where(c => c.ChatId == i.ChatId).OrderBy(c => c.SentAt).LastOrDefaultAsync();
                 var chatMembers = await _context.ChatMembers
                     .Include(cm => cm.User)
                     .Where(cm => cm.ChatId == i.ChatId)
@@ -99,6 +121,25 @@ namespace Messenger.API.Controllers
                     }
                     ).ToListAsync();
                 i.ChatMembers = chatMembers;
+                i.LastMessage = lastMessage != null ? new LastMessageDto
+                {
+                    Content = lastMessage.Content.IsNullOrEmpty() ? lastMessage.Attachments.Count + " вложений" : lastMessage.Content,
+                    MessageId = lastMessage.MessageId,
+                    SenderId = lastMessage.SenderId,
+                    Sender = new UserDto
+                    {
+                        AvatarUrl = lastMessage.Sender.AvatarUrl,
+                        CreatedAt = lastMessage.Sender.CreatedAt,
+                        Email = lastMessage.Sender.Email,
+                        FirstName = lastMessage.Sender.FirstName,
+                        LastName = lastMessage.Sender.LastName,
+                        LastSeen = lastMessage.Sender.LastSeen,
+                        PasswordHash = lastMessage.Sender.PasswordHash,
+                        UserId = lastMessage.Sender.UserId,
+                        Username = lastMessage.Sender.Username
+                    },
+                    ChatId = lastMessage.ChatId
+                } : null;
             }
             return Ok(chats);
         }
@@ -111,7 +152,7 @@ namespace Messenger.API.Controllers
             {
                 return NotFound();
             }
-
+            var lastMessage = await _context.Messages.Include(c => c.Attachments).Include(c => c.Sender).Where(c => c.ChatId == chatId).OrderBy(c => c.SentAt).LastOrDefaultAsync();
             var chatMembers = await _context.ChatMembers.Where(cm => cm.ChatId == chatId).Include(cm => cm.User).Select(cm => new ChatMemberDto
             {
                 JoinedAt = cm.JoinedAt,
@@ -138,7 +179,26 @@ namespace Messenger.API.Controllers
                 AvatarUrl = chat.GroupChatInfo.AvatarUrl,
                 GroupName = chat.GroupChatInfo.GroupName,
                 Description = chat.GroupChatInfo.Description,
-                ChatMembers = chatMembers
+                ChatMembers = chatMembers,
+                LastMessage = lastMessage != null ? new LastMessageDto
+                {
+                    Content = lastMessage.Content.IsNullOrEmpty() ? lastMessage.Attachments.Count + " вложений" : lastMessage.Content,
+                    MessageId = lastMessage.MessageId,
+                    SenderId = lastMessage.SenderId,
+                    Sender = new UserDto
+                    {
+                        AvatarUrl = lastMessage.Sender.AvatarUrl,
+                        CreatedAt = lastMessage.Sender.CreatedAt,
+                        Email = lastMessage.Sender.Email,
+                        FirstName = lastMessage.Sender.FirstName,
+                        LastName = lastMessage.Sender.LastName,
+                        LastSeen = lastMessage.Sender.LastSeen,
+                        PasswordHash = lastMessage.Sender.PasswordHash,
+                        UserId = lastMessage.Sender.UserId,
+                        Username = lastMessage.Sender.Username
+                    },
+                    ChatId = lastMessage.ChatId
+                } : null
             };
 
             return Ok(chatDto);
@@ -169,13 +229,13 @@ namespace Messenger.API.Controllers
                 AvatarUrl = chatInfo.AvatarUrl,
                 GroupName = chatInfo.GroupName,
                 Description = chatInfo.Description,
-                ChatMembers = new List<ChatMemberDto> 
-                { 
-                    new ChatMemberDto 
-                    { 
+                ChatMembers = new List<ChatMemberDto>
+                {
+                    new ChatMemberDto
+                    {
                         JoinedAt = chatMember.JoinedAt,
                         Role = chatMember.Role,
-                        User = new UserDto 
+                        User = new UserDto
                         {
                             UserId = admin.UserId,
                             LastSeen = admin.LastSeen,
@@ -188,7 +248,8 @@ namespace Messenger.API.Controllers
                             Username = admin.Username
                         }
                     }
-                }
+                },
+                LastMessage = null
             };
 
             return CreatedAtRoute(routeName: "GetChat", routeValues: new { response.ChatId }, value: response);

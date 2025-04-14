@@ -80,6 +80,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
                 setCurrentMessage('');
                 setRepliableMessage(null);
                 currentMessageInput.current.value = '';
+                await connection.invoke('SendNotificationSound', chatId + 'Notification');
             }
         }
     }

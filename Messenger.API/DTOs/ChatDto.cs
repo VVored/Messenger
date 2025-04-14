@@ -14,5 +14,6 @@ namespace Messenger.API.DTOs
         public string Description { get; set; }
         public string AvatarUrl { get; set; }
         public List<ChatMemberDto> ChatMembers { get; set; } = new List<ChatMemberDto>();
+        public LastMessageDto? LastMessage { get; set; }
     }
 }

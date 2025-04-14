@@ -27,11 +27,19 @@ const Chat = ({ chat, onClick }) => {
                     ? <img className={style.chat_avatar} src={`https://localhost:7192/api/files/${chat.avatarUrl}`} alt='img' />
                     : <img className={style.chat_avatar} src={`https://localhost:7192/api/files/${privateChatAvatarUrl}`} alt='img' />
             }
-            {
-                chat.chatType === 'public'
-                    ? <p>{chat.groupName}</p>
-                    : <p>{privateChatName}</p>
-            }
+            <div style={{width: '100%'}}>
+                {
+                    chat.chatType === 'public'
+                        ? <p style={{fontWeight: '700'}}>{chat.groupName}</p>
+                        : <p style={{fontWeight: '700'}}>{privateChatName}</p>
+                }
+                {
+                    chat.lastMessage
+                        ? <p style={{fontSize: '12px'}}>{chat.lastMessage.sender.firstName} {chat.lastMessage.sender.lastName}: {chat.lastMessage.content}</p>
+                        : <p></p>
+                }
+            </div>
+
         </div >
     )
 }

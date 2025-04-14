@@ -3,7 +3,7 @@ import style from './Login.module.css'
 import axios from 'axios';
 import FilePicker from './FilePicker';
 
-const CreateChat = ({setChats, setSelectedChat, setCreateChatIsOpen}) => {
+const CreateChat = ({setChats, setSelectedChat, setCreateChatIsOpen, JoinGroup}) => {
     const [chatType, setChatType] = useState('public');
     const [groupName, setGroupName] = useState('');
     const [description, setDescription] = useState('');
@@ -26,9 +26,9 @@ const CreateChat = ({setChats, setSelectedChat, setCreateChatIsOpen}) => {
                         'Authorization': `Bearer ${token}`
                     }
                 });
-                console.log(response);
                 setCreateChatIsOpen(null);
                 setChats(prev => [...prev, response.data]);
+                JoinGroup(response.chatId + 'Notification');
                 setSelectedChat(response.data);
             } catch (e) {
                 setError(e);
