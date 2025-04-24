@@ -3,7 +3,7 @@ import style from './Login.module.css'
 import axios from 'axios';
 import FilePicker from './FilePicker';
 
-const CreateChat = ({setChats, setSelectedChat, setCreateChatIsOpen, JoinGroup}) => {
+const CreateChat = ({ setChats, setSelectedChat, setCreateChatIsOpen, JoinGroup }) => {
     const [chatType, setChatType] = useState('public');
     const [groupName, setGroupName] = useState('');
     const [description, setDescription] = useState('');
@@ -28,8 +28,6 @@ const CreateChat = ({setChats, setSelectedChat, setCreateChatIsOpen, JoinGroup})
                 });
                 setCreateChatIsOpen(null);
                 setChats(prev => [...prev, response.data]);
-                JoinGroup(response.chatId + 'Notification');
-                setSelectedChat(response.data);
             } catch (e) {
                 setError(e);
                 console.log('ne good');
@@ -39,7 +37,7 @@ const CreateChat = ({setChats, setSelectedChat, setCreateChatIsOpen, JoinGroup})
 
     return (
         <div className={style.container}>
-            <FilePicker setAvatarUrl={setAvatarUrl}/>
+            <FilePicker setAvatarUrl={setAvatarUrl} />
             <input className={style.input} type="text" value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Название группового чата" />
             <input className={style.input} type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Описание чата" />
             <button className={style.button} onClick={() => createGroupChat()}>Создать</button>

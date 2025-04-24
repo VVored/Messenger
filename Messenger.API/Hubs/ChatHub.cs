@@ -225,7 +225,7 @@ namespace Messenger.API.Hubs
                             }
                         }
                 };
-                await Clients.Caller.SendAsync("createAndSetPrivateChat", response);
+                await Clients.Caller.SendAsync("createPrivateChat", response);
                 await Groups.AddToGroupAsync(Context.ConnectionId, response.ChatId + "Notification");
                 if (_connectionsMap.TryGetValue(secondUserId, out var secondUserConnectionId))
                 {

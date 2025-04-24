@@ -23,11 +23,6 @@ const ChatPage = () => {
             .build();
         await connection.start();
         connection.invoke('JoinBasicGroups');
-        connection.off('createAndSetPrivateChat');
-        connection.on('createAndSetPrivateChat', async (response) => {
-            setChats(prev => [...prev, response]);
-            openChatMessages(response);
-        });
         connection.off('createPrivateChat');
         connection.on('createPrivateChat', async (response) => {
             setChats(prev => [...prev, response]);
@@ -41,7 +36,7 @@ const ChatPage = () => {
             audio.play();
         })
 
-        setConnection(connection);
+        return connection;
     }
 
     const JoinGroup = async (chatId) => {
@@ -80,7 +75,7 @@ const ChatPage = () => {
     }
 
     useEffect(() => {
-        StartConnection();
+        StartConnection().then(result => setConnection(result));
         getUserChats().then((result) => {
             setChats(result.data);
         });
