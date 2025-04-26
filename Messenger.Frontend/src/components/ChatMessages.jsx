@@ -286,7 +286,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
                                     <input accept='image/png, image/gif, image/jpeg' type="file" id="file" className={styles.file_input} multiple onChange={e => { setFiles(e.target.files); }} />
                                 </div>
                                 <input ref={currentMessageInput} className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => { sendMessage(e, chat.chatId, currentMessage, repliableMessage?.messageId); }} placeholder="Напишите сообщение..." onPaste={(e) => { onPasteImage(e); }} />
-                                <button style={{ height: '111%', width: '10%' }} className={styles.button} onClick={() => { setIsEmojiListOpen(!isEmojiListOpen) }}>☺︎</button>
+                                <button style={{ height: '111%', width: '10%' }} className={styles.button} onClick={() => { setIsEmojiListOpen(!isEmojiListOpen) }}>😊</button>
                             </div>
                         : <button className={styles.button} onClick={() => { JoinChat() }}>Вступить в чат</button>}
             </div>
