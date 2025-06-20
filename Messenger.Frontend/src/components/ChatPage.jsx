@@ -87,7 +87,17 @@ const ChatPage = () => {
             <ChatList chats={chats} openCreateChat={openCreateChat} openChatMessages={openChatMessages} setSelectedUser={setSelectedUser} />
             <div style={{ width: '100%', backgroundColor: "rgba(178, 178, 178, 0.5)" }}>
                 {
-                    createChatIsOpen ? <CreateChat setChats={setChats} setSelectedChat={setSelectedChat} setCreateChatIsOpen={setCreateChatIsOpen} JoinGroup={JoinGroup} /> : selectedChat ? <ChatMessages connection={connection} setSelectedUser={setSelectedUser} setChats={setChats} chat={selectedChat}></ChatMessages> : <h1 style={{ textAlign: "center" }}>Выберите чат</h1>
+                    createChatIsOpen ? <CreateChat
+                        setChats={setChats}
+                        setSelectedChat={setSelectedChat}
+                        setCreateChatIsOpen={setCreateChatIsOpen}
+                        JoinGroup={JoinGroup} />
+                        : selectedChat
+                            ? <ChatMessages
+                                connection={connection}
+                                setSelectedUser={setSelectedUser}
+                                setChats={setChats} chat={selectedChat}></ChatMessages>
+                            : <h1 style={{ textAlign: "center" }}>Выберите чат</h1>
                 }
             </div>
             {

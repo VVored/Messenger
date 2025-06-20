@@ -25,7 +25,11 @@ namespace Messenger.API.Controllers
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
-
+        /// <summary>
+        /// Получение всех сообщений из определенного чата
+        /// </summary>
+        /// <param name="chatId"></param>
+        /// <returns></returns>
         [HttpGet("chats/{chatId}")]
         public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesFromChat(int chatId)
         {
@@ -67,7 +71,14 @@ namespace Messenger.API.Controllers
                         LastSeen = m.Sender.LastSeen,
                         PasswordHash = m.Sender.PasswordHash
                     },
-                    Attachments = m.Attachments.Select(a => new AttachmentDto { MessageId = a.MessageId, AttachmentId = a.AttachmentId, FileSize = a.FileSize, FileType = a.FileType, FileUrl = a.FileUrl }).ToList(),
+                    Attachments = m.Attachments.Select(a => new AttachmentDto 
+                    { 
+                        MessageId = a.MessageId, 
+                        AttachmentId = a.AttachmentId, 
+                        FileSize = a.FileSize, 
+                        FileType = a.FileType, 
+                        FileUrl = a.FileUrl 
+                    }).ToList(),
                     RepliableMessage = m.RepliableMessage != null ? new RepliableMessageDto 
                     {
                         Content = m.RepliableMessage.Content.IsNullOrEmpty() ? m.RepliableMessage.Attachments.Count.ToString() + " вложений" : m.RepliableMessage.Content,
@@ -81,7 +92,7 @@ namespace Messenger.API.Controllers
                             FirstName = m.RepliableMessage.Sender.FirstName,
                             LastName = m.RepliableMessage.Sender.LastName,
                             LastSeen = m.RepliableMessage.Sender.LastSeen,
-                            PasswordHash = m.RepliableMessage.Sender.PasswordHash,
+                            PasswordHash = m.RepliableMessage.Sender.PasswordHash,  
                             Username = m.RepliableMessage.Sender.Username,
                         },
                         SenderId = m.RepliableMessage.Sender.UserId
@@ -95,7 +106,11 @@ namespace Messenger.API.Controllers
 
             return Ok(response);
         }
-
+        /// <summary>
+        /// Получение определенного сообщения
+        /// </summary>
+        /// <param name="messageId"></param>
+        /// <returns></returns>
         [HttpGet("{messageId}", Name = "GetMessage")]
         public async Task<ActionResult<MessageDto>> GetMessage(int messageId)
         {
@@ -159,6 +174,11 @@ namespace Messenger.API.Controllers
 
             return Ok(response);
         }
+        /// <summary>
+        /// Создание записи о сообщении
+        /// </summary>
+        /// <param name="messageForCreationDto"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<MessageDto>> CreateMessage([FromBody] MessageForCreationDto messageForCreationDto)
         {
@@ -264,6 +284,11 @@ namespace Messenger.API.Controllers
 
             return CreatedAtRoute(routeName: "GetMessage", routeValues: new { message.MessageId }, value: response);
         }
+        /// <summary>
+        /// Редактирование определенного сообщения
+        /// </summary>
+        /// <param name="messageForEditDto"></param>
+        /// <returns></returns>
         [HttpPut("{messageId}")]
         public async Task<IActionResult> EditMessage([FromBody] MessageForEditDto messageForEditDto)
         {
@@ -310,6 +335,11 @@ namespace Messenger.API.Controllers
 
             return Ok();
         }
+        /// <summary>
+        /// Удаление определенного сообщения
+        /// </summary>
+        /// <param name="messageId"></param>
+        /// <returns></returns>
         [HttpDelete("{messageId}")]
         public async Task<IActionResult> DeleteMessage(int messageId)
         {

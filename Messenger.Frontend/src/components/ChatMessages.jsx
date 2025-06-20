@@ -229,14 +229,41 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
                 {
                     chat.chatType === 'public'
                         ? <div style={{ display: 'flex', width: '15%' }}>
-                            {isJoined ? <button className={styles.button} style={{ border: 'none' }} onClick={() => LeaveChat()}><img style={{ maxHeight: '50px' }} src={leaveChatImg} alt='' /></button> : <div></div>}
+                            {isJoined
+                                ? <button
+                                    className={styles.button}
+                                    style={{ border: 'none' }}
+                                    onClick={() => LeaveChat()}>
+                                    <img
+                                        style={{ maxHeight: '50px' }}
+                                        src={leaveChatImg}
+                                        alt='' />
+                                </button>
+                                : <div></div>}
                         </div>
                         : !isUserBlocked
-                            ? <div style={{ display: 'flex', width: '15%' }}>
-                                <button className={styles.button} style={{ border: 'none' }} onClick={() => { BlockUser(); }}><img style={{ maxHeight: '30px' }} src={blockUserImg} alt='' /></button>
+                            ? <div
+                                style={{ display: 'flex', width: '15%' }}>
+                                <button
+                                    className={styles.button}
+                                    style={{ border: 'none' }}
+                                    onClick={() => { BlockUser(); }}>
+                                    <img
+                                        style={{ maxHeight: '30px' }}
+                                        src={blockUserImg}
+                                        alt='' />
+                                </button>
                             </div>
-                            : <div style={{ display: 'flex', width: '15%' }}>
-                                <button className={styles.button} style={{ border: 'none' }} onClick={() => { UnblockUser(); }}><img style={{ maxHeight: '30px' }} src={unblockUserImg} alt='' /></button>
+                            : <div
+                                style={{ display: 'flex', width: '15%' }}>
+                                <button
+                                    className={styles.button}
+                                    style={{ border: 'none' }}
+                                    onClick={() => { UnblockUser(); }}>
+                                    <img
+                                        style={{ maxHeight: '30px' }}
+                                        src={unblockUserImg} alt='' />
+                                </button>
                             </div>
                 }
             </div>
@@ -285,7 +312,13 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
                                     <label htmlFor="file" className={styles.file_label}></label>
                                     <input accept='image/png, image/gif, image/jpeg' type="file" id="file" className={styles.file_input} multiple onChange={e => { setFiles(e.target.files); }} />
                                 </div>
-                                <input ref={currentMessageInput} className={styles.input} type="text" onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => { sendMessage(e, chat.chatId, currentMessage, repliableMessage?.messageId); }} placeholder="Напишите сообщение..." onPaste={(e) => { onPasteImage(e); }} />
+                                <input
+                                    ref={currentMessageInput}
+                                    className={styles.input}
+                                    type="text"
+                                    onChange={(e) => setCurrentMessage(e.target.value)}
+                                    onKeyDown={(e) => { sendMessage(e, chat.chatId, currentMessage, repliableMessage?.messageId); }}
+                                    placeholder="Напишите сообщение..." onPaste={(e) => { onPasteImage(e); }} />
                                 <button style={{ height: '111%', width: '10%' }} className={styles.button} onClick={() => { setIsEmojiListOpen(!isEmojiListOpen) }}>😊</button>
                             </div>
                         : <button className={styles.button} onClick={() => { JoinChat() }}>Вступить в чат</button>}

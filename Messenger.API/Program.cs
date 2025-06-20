@@ -8,13 +8,19 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Messenger.API.Services;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
 
+//Подключение сервисов
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 builder.Services.AddCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+//Аутентификация для реализации функционала реального времени
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -42,22 +48,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
+//Самописные сервисы, SignalR и контекст базы данных
 builder.Services.AddSingleton<FileExtensionContentTypeProvider>();
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
 builder.Services.AddTransient<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSignalR();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationDbContext")));
-
+//Реализация
 var app = builder.Build();
 
 app.UseCors(options =>
 {
-    options.WithOrigins("http://localhost:3000", "http://localhost:8000");
+    options.WithOrigins("http://localhost:3000");
     options.AllowCredentials();
     options.AllowAnyHeader();
     options.AllowAnyMethod();
 }); 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
