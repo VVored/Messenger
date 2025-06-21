@@ -59,7 +59,8 @@ var app = builder.Build();
 
 app.UseCors(options =>
 {
-    options.AllowAnyOrigin();
+    options.WithOrigins("http://localhost:3000", "http://muchat.ru", "https://muchat.ru");
+    options.AllowCredentials();
     options.AllowAnyHeader();
     options.AllowAnyMethod();
 }); 
