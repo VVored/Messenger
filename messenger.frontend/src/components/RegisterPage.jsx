@@ -19,7 +19,7 @@ const RegisterPage = () => {
             return;
         }
         try {
-            const response = await fetch('https://localhost:7192/api/users/register', {
+            const response = await fetch('http://45.144.222.67:5266/api/users/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, email, password, firstName, lastName, avatarUrl }),

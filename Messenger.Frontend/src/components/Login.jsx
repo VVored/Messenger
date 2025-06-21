@@ -14,7 +14,7 @@ const Login = () => {
             return;
         }
         try {
-            const response = await fetch('https://localhost:7192/api/authorization/login', {
+            const response = await fetch('http://45.144.222.67:5266/api/authorization/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),

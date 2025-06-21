@@ -10,7 +10,7 @@ const FilePicker = ({setAvatarUrl}) => {
     const uploadImage = async () => {
         const formData = new FormData();
         formData.append('file', file);
-        const response = await axios.post('https://localhost:7192/api/files', formData);
+        const response = await axios.post('http://45.144.222.67:5266/api/files', formData);
         setAvatarUrl(response.data);
     }
 

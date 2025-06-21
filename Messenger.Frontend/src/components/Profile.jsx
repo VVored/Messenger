@@ -32,7 +32,7 @@ const Profile = ({ selectedUser, setSelectedUser, connection, chats, openChatMes
         <div style={{ width: "30vw", overflowY: "auto", minHeight: "100vh" }}>
             <div style={{ backgroundColor: '#cccccc', height: '33%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: '0' }}>
                 <button onClick={() => { setSelectedUser(null) }} style={{ marginRight: 'auto', border: 'none', fontSize: '30px', color: 'white', backgroundColor: '#cccccc', cursor: 'pointer' }}>×</button>
-                <img width='100px' height='100px' style={{ border: '0px solid black', borderRadius: '100%', objectFit: 'cover' }} src={`https://localhost:7192/api/files/${selectedUser.avatarUrl}`} alt={`${selectedUser.avatarUrl}`}></img>
+                <img width='100px' height='100px' style={{ border: '0px solid black', borderRadius: '100%', objectFit: 'cover' }} src={`http://45.144.222.67:5266/api/files/${selectedUser.avatarUrl}`} alt={`${selectedUser.avatarUrl}`}></img>
                 <h3 style={{ color: 'white' }}>{selectedUser.firstName} {selectedUser.lastName}</h3>
             </div>
             {

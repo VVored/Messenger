@@ -22,7 +22,7 @@ const EditUser = () => {
         if (decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] !== id) {
             navigate('/chats');
         } else {
-            const response = await axios.get(`https://localhost:7192/api/users/${id}`);
+            const response = await axios.get(`http://45.144.222.67:5266/api/users/${id}`);
             if (response.status === 200) {
                 setUsername(response.data.username);
                 setAvatarUrl(response.data.avatarUrl);
@@ -39,7 +39,7 @@ const EditUser = () => {
             return;
         }
         try {
-            const response = await axios.put(`https://localhost:7192/api/users/${id}`, {id, username, email, password, firstName, lastName, avatarUrl})
+            const response = await axios.put(`http://45.144.222.67:5266/api/users/${id}`, {id, username, email, password, firstName, lastName, avatarUrl})
             if (response.status === 200) {
                 navigate('/chats');
             }

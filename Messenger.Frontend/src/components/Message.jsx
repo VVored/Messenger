@@ -7,7 +7,7 @@ const Message = ({ message, setSelectedUser, setRepliableMessage }) => {
 
     return (
         <div style={{ display: 'flex' }} onDoubleClick={() => {setRepliableMessage(message)}}>
-            <img onClick={() => { setSelectedUser(message.sender); }} className={styles.user_avatar} src={`https://localhost:7192/api/files/${message.sender.avatarUrl}`} alt='avatar' />
+            <img onClick={() => { setSelectedUser(message.sender); }} className={styles.user_avatar} src={`http://45.144.222.67:5266/api/files/${message.sender.avatarUrl}`} alt='avatar' />
             <div className={styles.message}>
                 {
                     message.repliableMessage
@@ -22,7 +22,7 @@ const Message = ({ message, setSelectedUser, setRepliableMessage }) => {
                 {
                     message.attachments
                         ? message.attachments.map(attachment => {
-                            return <img style={{ fontSize: '8px', width: '100%', maxWidth: '300px', maxHeight: '600px', border: '1px solid grey' }} src={`https://localhost:7192/api/files/${attachment.fileUrl}`} alt='img' key={attachment.fileUrl} />
+                            return <img style={{ fontSize: '8px', width: '100%', maxWidth: '300px', maxHeight: '600px', border: '1px solid grey' }} src={`http://45.144.222.67:5266/api/files/${attachment.fileUrl}`} alt='img' key={attachment.fileUrl} />
                         })
                         : <div></div>
                 }

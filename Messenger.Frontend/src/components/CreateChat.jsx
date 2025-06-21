@@ -15,7 +15,7 @@ const CreateChat = ({ setChats, setSelectedChat, setCreateChatIsOpen, JoinGroup 
         if (groupName !== '' || description !== '') {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.post('https://localhost:7192/api/chats', {
+                const response = await axios.post('http://45.144.222.67:5266/api/chats', {
                     chatType: chatType,
                     groupName: groupName,
                     description: description,

@@ -14,7 +14,7 @@ const ChatList = ({ chats, openCreateChat, openChatMessages, setSelectedUser }) 
     const getUser = async () => {
         const token = localStorage.getItem('token');
         const decoded = jwtDecode(token);
-        const response = await axios.get(`https://localhost:7192/api/users/${decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]}`);
+        const response = await axios.get(`http://45.144.222.67:5266/api/users/${decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]}`);
         if (response.status === 200) {
             setSelectedUser(response.data);
         }
@@ -22,7 +22,7 @@ const ChatList = ({ chats, openCreateChat, openChatMessages, setSelectedUser }) 
 
     const globalSearchChats = async () => {
         if (searchQuery !== '') {
-            const response = await axios.get(`https://localhost:7192/api/chats?searchQuery=${searchQuery}`, {
+            const response = await axios.get(`http://45.144.222.67:5266/api/chats?searchQuery=${searchQuery}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -33,7 +33,7 @@ const ChatList = ({ chats, openCreateChat, openChatMessages, setSelectedUser }) 
 
     const userSearch = async () => {
         if (searchQuery !== '') {
-            const response = await axios.get(`https://localhost:7192/api/users?searchQuery=${searchQuery}`);
+            const response = await axios.get(`http://45.144.222.67:5266/api/users?searchQuery=${searchQuery}`);
             setGlobalUsers(response.data);
         }
     }

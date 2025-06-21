@@ -24,8 +24,8 @@ const Chat = ({ chat, onClick }) => {
         <div className={style.chat_container} onClick={onClick}>
             {
                 chat.chatType === 'public'
-                    ? <img className={style.chat_avatar} src={`https://localhost:7192/api/files/${chat.avatarUrl}`} alt='img' />
-                    : <img className={style.chat_avatar} src={`https://localhost:7192/api/files/${privateChatAvatarUrl}`} alt='img' />
+                    ? <img className={style.chat_avatar} src={`http://45.144.222.67:5266/api/files/${chat.avatarUrl}`} alt='img' />
+                    : <img className={style.chat_avatar} src={`http://45.144.222.67:5266/api/files/${privateChatAvatarUrl}`} alt='img' />
             }
             <div style={{width: '100%'}}>
                 {

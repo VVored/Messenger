@@ -18,7 +18,7 @@ const ChatPage = () => {
 
     const StartConnection = async () => {
         const connection = new HubConnectionBuilder()
-            .withUrl(`https://localhost:7192/chat?access_token=${localStorage.getItem('token')}`)
+            .withUrl(`http://45.144.222.67:5266/chat?access_token=${localStorage.getItem('token')}`)
             .withAutomaticReconnect()
             .build();
         await connection.start();
@@ -49,7 +49,7 @@ const ChatPage = () => {
 
     const getUserChats = async () => {
         const token = localStorage.getItem('token');
-        const response = await axios.get('https://localhost:7192/api/chats/my', {
+        const response = await axios.get('http://45.144.222.67:5266/api/chats/my', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

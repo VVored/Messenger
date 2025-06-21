@@ -33,7 +33,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
 
     const IsUserJoined = async () => {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`https://localhost:7192/api/chats/${chat.chatId}/members/isjoined`, {
+        const response = await axios.get(`http://45.144.222.67:5266/api/chats/${chat.chatId}/members/isjoined`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -43,7 +43,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
 
     const IsUserBlocked = async (userId) => {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`https://localhost:7192/api/block/isblocked/${userId}/`, {
+        const response = await axios.get(`http://45.144.222.67:5266/api/block/isblocked/${userId}/`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -54,7 +54,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
 
     const AmIBlocked = async (userId) => {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`https://localhost:7192/api/block/amiblocked/${userId}/`, {
+        const response = await axios.get(`http://45.144.222.67:5266/api/block/amiblocked/${userId}/`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -65,7 +65,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
 
     const getChatMessages = async (chatId) => {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`https://localhost:7192/api/messages/chats/${chatId}`, {
+        const response = await axios.get(`http://45.144.222.67:5266/api/messages/chats/${chatId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -95,7 +95,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
             if (content !== '' || files.length > 0) {
                 const token = localStorage.getItem('token');
                 const attachments = await uploadFiles(files);
-                const response = await fetch('https://localhost:7192/api/messages', {
+                const response = await fetch('http://45.144.222.67:5266/api/messages', {
                     method: 'POST',
                     body: JSON.stringify({ chatId, content, attachments, repliableMessageId }),
                     headers: {
@@ -131,7 +131,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
         for (let i = 0; i < files.length; i++) {
             const formData = new FormData();
             formData.append('file', files[i]);
-            const response = await axios.post('https://localhost:7192/api/files', formData);
+            const response = await axios.post('http://45.144.222.67:5266/api/files', formData);
             const attachment = {
                 fileUrl: response.data,
                 fileType: files[i].type,
@@ -152,7 +152,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
 
     const BlockUser = async () => {
         const token = localStorage.getItem('token');
-        await fetch(`https://localhost:7192/api/block/${privateChatUserInfo.userId}`, {
+        await fetch(`http://45.144.222.67:5266/api/block/${privateChatUserInfo.userId}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -163,7 +163,7 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
 
     const UnblockUser = async () => {
         const token = localStorage.getItem('token');
-        await fetch(`https://localhost:7192/api/block/${privateChatUserInfo.userId}`, {
+        await fetch(`http://45.144.222.67:5266/api/block/${privateChatUserInfo.userId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -217,8 +217,8 @@ const ChatMessages = ({ connection, setSelectedUser, chat, setChats }) => {
                 <div style={{ display: 'flex', cursor: 'pointer', width: '85%', margin: 'auto 0' }}>
                     {
                         chat.chatType === 'public'
-                            ? <img className={styleChat.chat_avatar} src={`https://localhost:7192/api/files/${chat.avatarUrl}`} alt='img' />
-                            : <img className={styleChat.chat_avatar} src={`https://localhost:7192/api/files/${privateChatAvatarUrl}`} alt='img' />
+                            ? <img className={styleChat.chat_avatar} src={`http://45.144.222.67:5266/api/files/${chat.avatarUrl}`} alt='img' />
+                            : <img className={styleChat.chat_avatar} src={`http://45.144.222.67:5266/api/files/${privateChatAvatarUrl}`} alt='img' />
                     }
                     {
                         chat.chatType === 'public'
