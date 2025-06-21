@@ -59,6 +59,7 @@ var app = builder.Build();
 
 app.UseCors(options =>
 {
+    options.AllowAnyOrigin();
     options.AllowCredentials();
     options.AllowAnyHeader();
     options.AllowAnyMethod();
