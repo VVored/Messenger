@@ -17,15 +17,15 @@ namespace Messenger.API.Controllers
         [HttpGet("{fileUrl}")]
         public IActionResult GetFile(string fileUrl)
         {
-            if (!System.IO.File.Exists("D:/petProjects/Messenger/Messenger.API/Uploads/" + fileUrl))
+            if (!System.IO.File.Exists(Directory.GetCurrentDirectory() + "/Uploads/" + fileUrl))
             {
                 return NotFound();
             }
-            if (!_fileExtensionContentTypeProvider.TryGetContentType("D:/petProjects/Messenger/Messenger.API/Uploads/" + fileUrl, out var contentType))
+            if (!_fileExtensionContentTypeProvider.TryGetContentType(Directory.GetCurrentDirectory() + "/Uploads/" + fileUrl, out var contentType))
             {
                 contentType = "application/octet-stream";
             }
-            var bytes = System.IO.File.ReadAllBytes("D:/petProjects/Messenger/Messenger.API/Uploads/" + fileUrl);
+            var bytes = System.IO.File.ReadAllBytes(Directory.GetCurrentDirectory() + "/Uploads/" + fileUrl);
             return File(bytes, contentType, fileUrl);
         }
         [HttpPost]
